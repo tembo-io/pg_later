@@ -3,7 +3,7 @@ use pgrx::spi::SpiTupleTable;
 
 #[pg_extern]
 fn pg_later_init() -> Result<bool, spi::Error> {
-    let setup_queries = vec![
+    let setup_queries = [
         "select pgmq_create_non_partitioned('pg_later_jobs')",
         "select pgmq_create_non_partitioned('pg_later_results')",
     ];
@@ -12,6 +12,7 @@ fn pg_later_init() -> Result<bool, spi::Error> {
             let _ = c.update(q, None, None)?;
             Ok(())
         });
+        
         ran?
     }
     Ok(true)
