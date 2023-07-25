@@ -8,13 +8,7 @@ mod bgw;
 extension_sql!(
     "
     CREATE EXTENSION IF NOT EXISTS pgmq CASCADE;
-    CREATE TABLE IF NOT EXISTS pglater.later_meta (
-        id serial PRIMARY KEY,
-        name text NOT NULL,
-        description text,
-        created_at timestamp NOT NULL DEFAULT now(),
-        updated_at timestamp NOT NULL DEFAULT now()
-    );",
+    ",
     name = "pg_later_setup",
     bootstrap,
 );
@@ -22,7 +16,7 @@ extension_sql!(
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
-    use pgrx::prelude::*;
+    // use pgrx::prelude::*;
 }
 
 /// This module is required by `cargo pgrx test` invocations.
