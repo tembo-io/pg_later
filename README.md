@@ -3,16 +3,34 @@ Execute SQL now and get the results later.
 
 A postgres extension to execute queries asynchronously. 
 
+## Installation
+
+Add pg_later to shared_preload_libraries in postgresql.conf:
+
+```text
+shared_preload_libraries = 'pg_later'
+``````
+
+Clone the repository, build and run the extension with pgrx:
+
+```bash
+cargo pgrx run pg15
+```
+
+Initialize the extension's backend:
+
 ```sql
-CREATE EXTENSION pg_later CASCADE
+CREATE EXTENSION pg_later CASCADE;
+
+SELECT pglater.init();
 ```
 
 Execute a SQL query now:
 
 ```sql
-select pg_later_exec(
+select pglater.exec(
   'select * from pg_available_extensions order by name limit 2'
-) as job_id
+) as job_id;
 
  job_id 
 --------
@@ -23,7 +41,7 @@ select pg_later_exec(
 Come back at some later time, and retrieve the results by providing the job id:
 
 ```sql
-select pg_later_results(1)
+select pglater.fetch_results(1);
 
  pg_later_results                                                                                                                                                                                       
 --------------------

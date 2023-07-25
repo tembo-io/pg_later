@@ -5,6 +5,20 @@ pgrx::pg_module_magic!();
 mod api;
 mod bgw;
 
+extension_sql!(
+    "
+    CREATE EXTENSION IF NOT EXISTS pgmq CASCADE;
+    CREATE TABLE IF NOT EXISTS pglater.later_meta (
+        id serial PRIMARY KEY,
+        name text NOT NULL,
+        description text,
+        created_at timestamp NOT NULL DEFAULT now(),
+        updated_at timestamp NOT NULL DEFAULT now()
+    );",
+    name = "pg_later_setup",
+    bootstrap,
+);
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {

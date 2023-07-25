@@ -22,8 +22,6 @@ pub extern "C" fn _PG_init() {
 pub extern "C" fn background_worker_main(_arg: pg_sys::Datum) {
     BackgroundWorker::attach_signal_handlers(SignalWakeFlags::SIGHUP | SignalWakeFlags::SIGTERM);
 
-    // specify database
-    // TODO: default to public schema
     let db = from_env_default("PG_LATER_DATABASE", "pg_later");
     BackgroundWorker::connect_worker_to_spi(Some(&db), None);
 
