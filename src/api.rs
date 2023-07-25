@@ -2,7 +2,7 @@ use pgrx::prelude::*;
 use pgrx::spi::SpiTupleTable;
 
 #[pg_extern]
-fn pg_later_init() -> Result<bool, spi::Error> {
+fn init() -> Result<bool, spi::Error> {
     let setup_queries = [
         "select pgmq_create_non_partitioned('pg_later_jobs')",
         "select pgmq_create_non_partitioned('pg_later_results')",
@@ -20,7 +20,7 @@ fn pg_later_init() -> Result<bool, spi::Error> {
 
 /// send a query to be executed by the next available worker
 #[pg_extern]
-pub fn pg_later_exec(query: &str) -> Result<i64, spi::Error> {
+pub fn exec(query: &str) -> Result<i64, spi::Error> {
     let msg = serde_json::json!({
         "query": query,
     });
@@ -31,7 +31,7 @@ pub fn pg_later_exec(query: &str) -> Result<i64, spi::Error> {
 
 // get the resultset of a previously submitted query
 #[pg_extern]
-fn pg_later_results(job_id: i64) -> Result<Option<pgrx::JsonB>, spi::Error> {
+fn fetch_results(job_id: i64) -> Result<Option<pgrx::JsonB>, spi::Error> {
     let query = format!(
         "select * from pgmq_pg_later_results
         where message->>'job_id' = '{job_id}'
@@ -94,15 +94,6 @@ fn poll_queue(timeout: i64) -> Result<Option<Vec<(i64, pgrx::JsonB)>>, spi::Erro
     }
 }
 
-// #[pg_extern]
-// pub fn exec_to_table(
-//     query: &str,
-// ) -> Result<TableIterator<'static, (name!(query, String), name!(results, pgrx::JsonB))>, spi::Error>
-// {
-//     let resultset = query_to_json(query)?;
-//     Ok(TableIterator::new(resultset.into_iter()))
-// }
-
 use std::panic::{self};
 
 pub fn query_to_json(query: &str) -> Result<Vec<pgrx::JsonB>, spi::Error> {
@@ -143,18 +134,3 @@ pub fn delete_from_queue(msg_id: i64) -> Result<(), spi::Error> {
     let _: bool = Spi::get_one(&del)?.expect("failed to send message to queue");
     Ok(())
 }
-
-extension_sql!(
-    "
-    CREATE EXTENSION IF NOT EXISTS pgmq CASCADE;
-    CREATE SCHEMA IF NOT EXISTS pglater;
-    CREATE TABLE IF NOT EXISTS pglater.later_meta (
-        id serial PRIMARY KEY,
-        name text NOT NULL,
-        description text,
-        created_at timestamp NOT NULL DEFAULT now(),
-        updated_at timestamp NOT NULL DEFAULT now()
-    );",
-    name = "pg_later_setup",
-    bootstrap,
-);
