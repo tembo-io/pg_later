@@ -3,7 +3,7 @@ use pgrx::spi::SpiTupleTable;
 
 #[pg_extern]
 fn pg_later_init() -> Result<bool, spi::Error> {
-    let setup_queries = vec![
+    let setup_queries = [
         "select pgmq_create_non_partitioned('pg_later_jobs')",
         "select pgmq_create_non_partitioned('pg_later_results')",
     ];
@@ -12,6 +12,7 @@ fn pg_later_init() -> Result<bool, spi::Error> {
             let _ = c.update(q, None, None)?;
             Ok(())
         });
+        
         ran?
     }
     Ok(true)
@@ -111,6 +112,7 @@ pub fn query_to_json(query: &str) -> Result<Vec<pgrx::JsonB>, spi::Error> {
         let queried: Result<(), spi::Error> = Spi::connect(|mut client| {
             let q = format!("select to_jsonb(t) as results from ({query}) t");
             let tup_table = client.update(&q, None, None)?;
+            results.reserve_exact(tup_table.len());
             for row in tup_table {
                 let r = row["results"]
                     .value::<pgrx::JsonB>()
@@ -120,8 +122,10 @@ pub fn query_to_json(query: &str) -> Result<Vec<pgrx::JsonB>, spi::Error> {
             }
             Ok(())
         });
+
         queried
     }));
+
     match queried {
         Ok(_) => Ok(results),
         Err(e) => {
