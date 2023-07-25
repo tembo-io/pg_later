@@ -23,26 +23,27 @@ pub extern "C" fn background_worker_main(_arg: pg_sys::Datum) {
     BackgroundWorker::attach_signal_handlers(SignalWakeFlags::SIGHUP | SignalWakeFlags::SIGTERM);
 
     let db = from_env_default("PG_LATER_DATABASE", "postgres");
+    log!("Connecting background worker to database: {}", db);
     BackgroundWorker::connect_worker_to_spi(Some(&db), None);
 
     log!("Starting BG Workers {}", BackgroundWorker::get_name(),);
 
     // poll at 10s or on a SIGTERM
-    while BackgroundWorker::wait_latch(Some(Duration::from_secs(10))) {
+    while BackgroundWorker::wait_latch(Some(Duration::from_secs(5))) {
         if BackgroundWorker::sighup_received() {
             // on SIGHUP, you might want to reload some external configuration or something
         }
         // within a transaction, execute an SQL statement, and log its results
         let _result: Result<(), pgrx::spi::Error> = BackgroundWorker::transaction(|| {
-            let job = get_job(1);
-            log!("job: {:?}", job);
+            let job: Option<(i64, String)> = get_job(120);
             match job {
                 Some((job_id, query)) => {
+                    log!("pg-later: executing job: {}", query);
                     let _exec_job = exec_job(job_id, &query);
                     delete_from_queue(job_id)?;
                 }
                 None => {
-                    log!("No job");
+                    log!("pg-later: no jobs in queue");
                 }
             }
             Ok(())
