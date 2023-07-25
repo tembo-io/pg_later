@@ -9,9 +9,9 @@ Add pg_later to shared_preload_libraries in postgresql.conf:
 
 ```text
 shared_preload_libraries = 'pg_later'
-``````
+```
 
-Clone the repository, build and run the extension with pgrx:
+Clone the repository, build and run the extension with [pgrx](https://github.com/pgcentralfoundation/pgrx):
 
 ```bash
 cargo pgrx run pg15
