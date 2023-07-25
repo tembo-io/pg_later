@@ -47,7 +47,7 @@ select pglater.fetch_results(1);
 --------------------
 {
   "query": "select * from pg_available_extensions order by name limit 2",
-  "job_id": 48,
+  "job_id": 1,
   "result": [
     {
       "name": "adminpack",
