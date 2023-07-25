@@ -12,7 +12,7 @@ fn init() -> Result<bool, spi::Error> {
             let _ = c.update(q, None, None)?;
             Ok(())
         });
-        
+
         ran?
     }
     Ok(true)
