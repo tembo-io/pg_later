@@ -3,24 +3,16 @@ name: PG Later Extension
 defaults:
   run:
     shell: bash
-    working-directory: ./pg_later
+    working-directory: ./
 
 on:
   pull_request:
     branches:
       - main
-    paths:
-      - '.github/workflows/pg_later.yml'
-      - '.github/actions/pgx-init/**'
-      - 'pg_later/**'
 
   push:
     branches:
       - main
-    paths:
-      - '.github/workflows/pg_later.yml'
-      - '.github/actions/pgx-init/**'
-      - 'pg_later/**'
 
 jobs:
   lint:
@@ -44,7 +36,7 @@ jobs:
             /home/runner/.pgrx
       - uses: ./.github/actions/pgx-init
         with:
-          working-directory: pg_later/
+          working-directory: ./
       - name: Cargo format
         run: cargo +nightly fmt --all --check
       - name: Clippy
@@ -69,7 +61,7 @@ jobs:
             /home/runner/.pgrx
       - uses: ./.github/actions/pgx-init
         with:
-          working-directory: pg_later/
+          working-directory: ./
       - name: test
         run: |
           pg_version=$(stoml Cargo.toml features.default)
@@ -99,10 +91,10 @@ jobs:
         shell: bash
         run: cargo install pg-trunk
       - name: trunk build
-        working-directory: pg_later/
+        working-directory: ./
         run: trunk build
       - name: trunk publish
-        working-directory: pg_later/
+        working-directory: ./
         env:
           TRUNK_API_TOKEN: ${{ secrets.TRUNK_AUTH_TOKEN }}
         run: trunk publish
