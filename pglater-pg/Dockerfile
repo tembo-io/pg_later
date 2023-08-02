@@ -17,4 +17,4 @@ RUN chmod -R 0700 $PGDATA
 USER postgres
 RUN pg_ctl init
 
-ENTRYPOINT ["/bin/bash"]
+CMD ["postgres"]
