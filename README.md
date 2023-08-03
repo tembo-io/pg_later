@@ -5,6 +5,14 @@ A postgres extension to execute queries asynchronously.
 
 ## Installation
 
+### Run with docker
+
+```bash
+docker run -p 5432:5432 -e POSTGRES_PASSWORD=p quay.io/tembo/pglater-pg:latest
+```
+
+### Install from source
+
 Add pg_later to shared_preload_libraries in postgresql.conf:
 
 ```text
@@ -16,6 +24,8 @@ Clone the repository, build and run the extension with [pgrx](https://github.com
 ```bash
 cargo pgrx run pg15
 ```
+
+### Using the extension
 
 Initialize the extension's backend:
 
