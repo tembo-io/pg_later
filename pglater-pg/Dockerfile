@@ -1,5 +1,7 @@
 FROM quay.io/coredb/ubuntu:22.04 as builder
 
+ARG PG_LATER_VER=0.0.5
+
 RUN apt-get update && apt-get install -y curl pkg-config libssl-dev build-essential libclang-dev clang software-properties-common
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 RUN /root/.cargo/bin/cargo install pg-trunk
@@ -53,7 +55,7 @@ RUN apt-get update && apt-get install -y \
 
 COPY ./postgresql.conf /usr/share/postgresql/${PG_MAJOR}/postgresql.conf.sample
 
-RUN trunk install pg_later
+RUN trunk install pg_later --vesion ${PG_LATER_VER}
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]

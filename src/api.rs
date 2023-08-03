@@ -52,7 +52,7 @@ fn fetch_results(job_id: i64) -> Result<Option<pgrx::JsonB>, spi::Error> {
         }
         _ => {
             return Err(spi::Error::CursorNotFound(
-                "failed to execute query".to_owned(),
+                "pg-later: failed to execute query".to_owned(),
             ));
         }
     };
@@ -61,7 +61,14 @@ fn fetch_results(job_id: i64) -> Result<Option<pgrx::JsonB>, spi::Error> {
 
 // gets a job query from the queue
 pub fn get_job(timeout: i64) -> Option<(i64, String)> {
-    let job = poll_queue(timeout).expect("failed");
+    let job = match poll_queue(timeout) {
+        Ok(Some(j)) => Some(j),
+        Ok(None) => None,
+        Err(e) => {
+            log!("pg-later: error, {:?}", e);
+            None
+        }
+    };
     match job {
         Some(job) => {
             let msg_id = job[0].0;
@@ -78,8 +85,16 @@ fn poll_queue(timeout: i64) -> Result<Option<Vec<(i64, pgrx::JsonB)>>, spi::Erro
 
     let query =
         format!("select msg_id, message from public.pgmq_read('pg_later_jobs' ,{timeout}, 1)");
+
     let _: Result<(), spi::Error> = Spi::connect(|mut client| {
-        let tup_table: SpiTupleTable = client.update(&query, None, None)?;
+        let tup_table_handle: Result<SpiTupleTable, spi::Error> = client.update(&query, None, None);
+        let tup_table = match tup_table_handle {
+            Ok(t) => t,
+            Err(e) => {
+                log!("pg-later: error, {:?}", e);
+                return Ok(());
+            }
+        };
         for row in tup_table {
             let msg_id = row["msg_id"].value::<i64>()?.expect("no msg_id");
             let message = row["message"].value::<pgrx::JsonB>()?.expect("no message");
@@ -98,7 +113,7 @@ use std::panic::{self};
 
 pub fn query_to_json(query: &str) -> Result<Vec<pgrx::JsonB>, spi::Error> {
     let mut results: Vec<pgrx::JsonB> = Vec::new();
-    log!("executing query: {query}");
+    log!("pg-later: executing query: {query}");
     let queried = panic::catch_unwind(panic::AssertUnwindSafe(|| {
         let queried: Result<(), spi::Error> = Spi::connect(|mut client| {
             let q = format!("select to_jsonb(t) as results from ({query}) t");
@@ -123,7 +138,7 @@ pub fn query_to_json(query: &str) -> Result<Vec<pgrx::JsonB>, spi::Error> {
             log!("Error: {:?}", e);
             // TODO: a more appropriate error enum
             Err(spi::Error::CursorNotFound(
-                "failed to execute query".to_owned(),
+                "pg-later: failed to execute query".to_owned(),
             ))
         }
     }
