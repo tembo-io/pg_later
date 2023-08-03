@@ -5,7 +5,7 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 RUN /root/.cargo/bin/cargo install pg-trunk
 
 FROM quay.io/coredb/ubuntu:22.04
-ARG PG_LATER_VER=0.0.5
+ARG PG_LATER_VER=0.0.6
 
 COPY --from=builder /root/.cargo/bin/trunk /usr/bin/trunk
 
