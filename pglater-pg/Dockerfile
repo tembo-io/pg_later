@@ -55,7 +55,7 @@ RUN apt-get update && apt-get install -y \
 
 COPY ./postgresql.conf /usr/share/postgresql/${PG_MAJOR}/postgresql.conf.sample
 
-RUN trunk install pg_later --vesion ${PG_LATER_VER}
+RUN trunk install pg_later --version ${PG_LATER_VER}
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]
