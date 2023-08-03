@@ -9,10 +9,14 @@ on:
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - 'pglater-pg/**'
 
   push:
     branches:
       - main
+    paths-ignore:
+      - 'pglater-pg/**'
 
 jobs:
   lint:
