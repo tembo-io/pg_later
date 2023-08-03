@@ -8,7 +8,7 @@ A postgres extension to execute queries asynchronously.
 ### Run with docker
 
 ```bash
-docker run -p 5432:5432 -e POSTGRES_PASSWORD=p quay.io/tembo/pglater-pg:latest
+docker run -p 5432:5432 -e POSTGRES_PASSWORD=postgres quay.io/tembo/pglater-pg:latest
 ```
 
 ### Install from source
