@@ -80,7 +80,7 @@ fn exec_job(job_id: i64, query: &str) -> Result<(), spi::Error> {
             serde_json::json!({
                 "status": "success",
                 "job_id": job_id,
-                "query": query,
+                "query": query.replace('\'', "''"),
                 "result": json,
             })
         }
@@ -89,7 +89,7 @@ fn exec_job(job_id: i64, query: &str) -> Result<(), spi::Error> {
             serde_json::json!({
                 "status": "failure",
                 "job_id": job_id,
-                "query": query,
+                "query": query.replace('\'', "''"),
                 "result": format!("error: {e}"),
             })
         }

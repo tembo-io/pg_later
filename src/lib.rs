@@ -13,12 +13,6 @@ extension_sql!(
     bootstrap,
 );
 
-#[cfg(any(test, feature = "pg_test"))]
-#[pg_schema]
-mod tests {
-    // use pgrx::prelude::*;
-}
-
 /// This module is required by `cargo pgrx test` invocations.
 /// It must be visible at the root of your extension crate.
 #[cfg(test)]
