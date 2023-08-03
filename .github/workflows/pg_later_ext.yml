@@ -19,6 +19,38 @@ on:
       - 'pglater-pg/**'
 
 jobs:
+  dependencies:
+    name: Install dependencies
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+
+      # rust needed to install trunk
+      - name: Install Rust stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          cache-directories: /home/runner/.pgrx
+
+      - name: Install stoml and pg-trunk
+        shell: bash
+        run: |
+         set -xe
+         wget https://github.com/freshautomations/stoml/releases/download/v0.7.1/stoml_linux_amd64 &> /dev/null
+         mv stoml_linux_amd64 stoml
+         chmod +x stoml
+         sudo mv stoml /usr/local/bin/
+         cargo install pg-trunk
+
+      - name: Cache binaries
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/local/bin/stoml
+            ~/.cargo/bin/trunk
+          key: ${{ runner.os }}-bins-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-bins-
   lint:
     name: Run linters
     runs-on: ubuntu-22.04
@@ -48,6 +80,7 @@ jobs:
 
   test:
     name: Run tests
+    needs: dependencies
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
@@ -66,8 +99,19 @@ jobs:
       - uses: ./.github/actions/pgx-init
         with:
           working-directory: ./
+      - name: Restore cached binaries
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/local/bin/stoml
+            ~/.cargo/bin/trunk
+          key: ${{ runner.os }}-bins-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-bins-
       - name: test
         run: |
+          pgrx15_config=$(/usr/local/bin/stoml ~/.pgrx/config.toml configs.pg15)
+          ~/.cargo/bin/trunk install pgmq --pg-config ${pgrx15_config}
           pg_version=$(stoml Cargo.toml features.default)
           cargo pgrx run ${pg_version} --pgcli || true
           cargo pgrx test ${pg_version}
@@ -76,6 +120,7 @@ jobs:
     # only publish off main branch
     if: github.ref == 'refs/heads/main'
     name: trunk publish
+    needs: dependencies
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
@@ -91,14 +136,20 @@ jobs:
           # Additional directories to cache
           cache-directories: |
             /home/runner/.pgrx
-      - name: Install pg-trunk
-        shell: bash
-        run: cargo install pg-trunk
+      - name: Restore cached binaries
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/local/bin/stoml
+            ~/.cargo/bin/trunk
+          key: ${{ runner.os }}-bins-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-bins-
       - name: trunk build
         working-directory: ./
-        run: trunk build
+        run:  ~/.cargo/bin/trunk build
       - name: trunk publish
         working-directory: ./
         env:
           TRUNK_API_TOKEN: ${{ secrets.TRUNK_AUTH_TOKEN }}
-        run: trunk publish
+        run:  ~/.cargo/bin/trunk publish

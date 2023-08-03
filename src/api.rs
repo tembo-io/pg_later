@@ -22,9 +22,10 @@ fn init() -> Result<bool, spi::Error> {
 #[pg_extern]
 pub fn exec(query: &str) -> Result<i64, spi::Error> {
     let msg = serde_json::json!({
-        "query": query,
+        "query": query.replace('\'', "''").replace(';', ""),
     });
-    let enqueue = format!("select pgmq_send('pg_later_jobs', '{msg}')");
+    let enqueue = format!("select pgmq_send('pg_later_jobs', '{msg}'::jsonb)");
+    log!("pg-later: sending query to queue: {query}");
     let msg_id: i64 = Spi::get_one(&enqueue)?.expect("failed to send message to queue");
     Ok(msg_id)
 }
@@ -113,10 +114,10 @@ use std::panic::{self};
 
 pub fn query_to_json(query: &str) -> Result<Vec<pgrx::JsonB>, spi::Error> {
     let mut results: Vec<pgrx::JsonB> = Vec::new();
-    log!("pg-later: executing query: {query}");
     let queried = panic::catch_unwind(panic::AssertUnwindSafe(|| {
         let queried: Result<(), spi::Error> = Spi::connect(|mut client| {
             let q = format!("select to_jsonb(t) as results from ({query}) t");
+            log!("pg-later: executing query: {q}");
             let tup_table = client.update(&q, None, None)?;
             results.reserve_exact(tup_table.len());
             for row in tup_table {
@@ -148,4 +149,17 @@ pub fn delete_from_queue(msg_id: i64) -> Result<(), spi::Error> {
     let del = format!("select pgmq_delete('pg_later_jobs', {msg_id})");
     let _: bool = Spi::get_one(&del)?.expect("failed to send message to queue");
     Ok(())
+}
+
+#[cfg(any(test, feature = "pg_test"))]
+#[pg_schema]
+mod tests {
+    use super::*;
+    use pgrx::prelude::*;
+
+    #[pg_test]
+    fn test_json() {
+        let q = query_to_json("select 1").expect("failed to execute query");
+        assert_eq!(q.len(), 1)
+    }
 }
