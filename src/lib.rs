@@ -4,6 +4,8 @@ pgrx::pg_module_magic!();
 
 mod api;
 mod bgw;
+mod clf;
+mod executor;
 
 extension_sql!(
     "
