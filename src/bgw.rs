@@ -6,7 +6,8 @@ use std::time::Duration;
 
 use pgrx::bgworkers::*;
 
-use crate::api::{delete_from_queue, get_job, query_to_json};
+use crate::api::{delete_from_queue, get_job};
+use crate::executor::query_to_json;
 
 #[pg_guard]
 pub extern "C" fn _PG_init() {

@@ -1,12 +1,12 @@
 [extension]
 name = "pg_later"
-repository = "https://github.com/tembo-io/tembo/tree/main/pg_later"
-license = "Apache 2.0"
+repository = "https://github.com/tembo-io/pg_later"
+license = "PostgreSQL"
 description = "Execute SQL statements now and check the results later."
-homepage = "https://github.com/tembo-io/tembo/tree/main/pg_later"
-documentation = "https://github.com/tembo-io/tembo/tree/main/pg_later"
+homepage = "https://github.com/tembo-io/pg_later"
+documentation = "https://github.com/tembo-io/pg_later"
 categories = ["orchestration"]
-version = "0.0.7"
+version = "0.0.8"
 
 [build]
 postgres_version = "15"
