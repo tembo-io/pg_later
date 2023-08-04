@@ -58,7 +58,7 @@ pub fn query_to_json(query: &str) -> Result<Vec<pgrx::JsonB>, spi::Error> {
             exec_row_query(query)
         }
         false => {
-            log!("ddl or something");
+            log!("utility statement");
             exec_utility(query)
         }
     }
