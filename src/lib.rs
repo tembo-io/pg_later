@@ -6,6 +6,7 @@ mod api;
 mod bgw;
 mod clf;
 mod executor;
+mod util;
 
 extension_sql!(
     "
