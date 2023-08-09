@@ -1,13 +1,15 @@
+use pgmq::{Message, PGMQueueExt};
+use pgrx::bgworkers::*;
 use pgrx::prelude::*;
-use pgrx::spi;
-use std::env;
-
+use sqlx::postgres::PgRow;
+use sqlx::Pool;
+use sqlx::Postgres;
 use std::time::Duration;
 
-use pgrx::bgworkers::*;
-
-use crate::api::{delete_from_queue, get_job};
-use crate::executor::query_to_json;
+use crate::executor::{query_to_json, JobMessage};
+use crate::util;
+use anyhow::Result;
+use sqlx::Row;
 
 #[pg_guard]
 pub extern "C" fn _PG_init() {
@@ -23,60 +25,131 @@ pub extern "C" fn _PG_init() {
 pub extern "C" fn background_worker_main(_arg: pg_sys::Datum) {
     BackgroundWorker::attach_signal_handlers(SignalWakeFlags::SIGHUP | SignalWakeFlags::SIGTERM);
 
-    let db = from_env_default("PG_LATER_DATABASE", "postgres");
-    log!("Connecting background worker to database: {}", db);
-    BackgroundWorker::connect_worker_to_spi(Some(&db), None);
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_io()
+        .enable_time()
+        .build()
+        .unwrap();
 
-    log!("Starting BG Workers {}", BackgroundWorker::get_name(),);
+    let (conn, queue) = runtime.block_on(async {
+        let conn = util::get_pg_conn()
+            .await
+            .expect("failed to connect to database");
+        let queue = PGMQueueExt::new_with_pool(conn.clone())
+            .await
+            .expect("failed to init db connection");
+        (conn, queue)
+    });
+
+    log!(
+        "Starting BG Workers {}, connection: {:?}",
+        BackgroundWorker::get_name(),
+        conn
+    );
     // poll at 10s or on a SIGTERM
     while BackgroundWorker::wait_latch(Some(Duration::from_secs(5))) {
         if BackgroundWorker::sighup_received() {
             // TODO: reload config
         }
-        if !ready() {
+        let rdy = runtime.block_on(async { ready(&conn).await });
+        if !rdy {
             log!("pg-later: not ready");
             continue;
         }
-        let _result: Result<(), pgrx::spi::Error> = BackgroundWorker::transaction(|| {
-            let job: Option<(i64, String)> = get_job(120);
-            match job {
-                Some((job_id, query)) => {
-                    log!("pg-later: executing job: {}", query);
-                    let _exec_job = exec_job(job_id, &query);
-                    delete_from_queue(job_id)?;
+
+        runtime.block_on(async {
+            // let x = sqlx::query("select to_json(t) from (select * from pgmq_pg_later_jobs))").fetch_all(&conn).await.expect("failed query");
+            // for row in x {
+            //     let r: serde_json::Value = row.into();
+            //     log!("pg-later: got row: {:?}", row.into());
+            // }
+
+            let msg: String = sqlx::query_scalar("select CURRENT_USER")
+                .fetch_one(&conn)
+                .await
+                .expect("failed to read from queue");
+            log!("current_db {}", msg);
+            // let msg = fetch_one_message::<JobMessage>("select * from public.pgmq_read('pg_later_jobs', 1, 1)", &conn).await.expect("failed to read from queue");
+            // let msg = queue.read::<serde_json::Value>("pg_later_jobs", 30).await.expect("failed to read from queue");
+
+            // let row: (serde_json::Value,) = sqlx::query_as(&format!(
+            //     "select to_jsonb(t) as results from (select message from pgmq_pg_later_jobs) t"
+            // ))
+            // let row: (serde_json::Value,) = sqlx::query_as(&format!(
+            //     "select * from pgmq_read('pg_later_jobs'::text, 1::integer,1::integer)"
+            // ))
+            // .fetch_one(&conn)
+            // .await
+            // .expect("failed to fetch");
+            // log!("pg-later: got message: {:?}", row.0);
+            match queue.read::<JobMessage>("pg_later_jobs", 30).await {
+                Ok(Some(job)) => {
+                    log!("pg-later: executing job: {}", job.message.query);
+                    let _ = exec_job(job.msg_id, &job.message.query, &conn);
+                    // for now, always delete whether the incoming job succeeded or failed
+                    queue
+                        .archive("pg_later_jobs", job.msg_id)
+                        .await
+                        .expect("failed to archive job");
                 }
-                None => {
-                    log!("pg-later: no jobs in queue");
+                Ok(None) => {
+                    log!("pg-later: no jobs in queue")
+                }
+                Err(e) => {
+                    log!("pg-later: error, {:?}", e);
                 }
             }
-            Ok(())
         });
     }
-
-    log!(
-        "Goodbye from inside the {} BGWorker! ",
-        BackgroundWorker::get_name()
-    );
+    log!("shutting down {} BGWorker", BackgroundWorker::get_name());
 }
 
-fn ready() -> bool {
-    let exists: bool = BackgroundWorker::transaction(|| {
-        Spi::get_one::<bool>(
-            "SELECT EXISTS (
+pub async fn fetch_one_message<T: for<'de> serde::Deserialize<'de>>(
+    query: &str,
+    connection: &Pool<Postgres>,
+) -> Result<Option<Message<T>>> {
+    log!("executing query: {}", query);
+    let row: Result<PgRow, sqlx::Error> = sqlx::query(query).fetch_one(connection).await;
+    match row {
+        Ok(row) => {
+            // happy path - successfully read a message
+            let raw_msg = row.get("message");
+            let parsed_msg = serde_json::from_value::<T>(raw_msg);
+            match parsed_msg {
+                Ok(parsed_msg) => Ok(Some(Message {
+                    msg_id: row.get("msg_id"),
+                    vt: row.get("vt"),
+                    read_ct: row.get("read_ct"),
+                    enqueued_at: row.get("enqueued_at"),
+                    message: parsed_msg,
+                })),
+                Err(e) => {
+                    log!("error");
+                    Ok(None)
+                }
+            }
+        }
+        Err(sqlx::error::Error::RowNotFound) => Ok(None),
+        Err(e) => Err(e)?,
+    }
+}
+
+async fn ready(conn: &Pool<Postgres>) -> bool {
+    sqlx::query_scalar(
+        "SELECT EXISTS (
             SELECT 1
             FROM pg_tables
             WHERE tablename = 'pgmq_pg_later_jobs'
         );",
-        )
-        .expect("failed to interface with SPI")
-        .expect("select 1 returned None")
-    });
-    exists
+    )
+    .fetch_one(conn)
+    .await
+    .expect("failed")
 }
 
 // executes a query and writes results to a results queue
-fn exec_job(job_id: i64, query: &str) -> Result<(), spi::Error> {
-    let result_message = match query_to_json(query) {
+async fn exec_job(job_id: i64, query: &str, conn: &Pool<Postgres>) -> Result<(), spi::Error> {
+    let result_message = match query_to_json(query, conn).await {
         Ok(json) => {
             serde_json::json!({
                 "status": "success",
@@ -95,11 +168,8 @@ fn exec_job(job_id: i64, query: &str) -> Result<(), spi::Error> {
             })
         }
     };
-    let enqueue = format!("select pgmq_send('pg_later_results', '{result_message}')");
+
+    let enqueue: String = format!("select pgmq_send('pg_later_results', '{result_message}')");
     let _: i64 = Spi::get_one(&enqueue)?.expect("query did not return message id");
     Ok(())
-}
-
-fn from_env_default(key: &str, default: &str) -> String {
-    env::var(key).unwrap_or_else(|_| default.to_owned())
 }

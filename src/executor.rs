@@ -22,7 +22,6 @@ async fn exec_row_query(query: &str, conn: &Pool<Postgres>) -> Result<Vec<serde_
     Ok(results)
 }
 
-
 pub async fn query_to_json(query: &str, conn: &Pool<Postgres>) -> Result<Vec<serde_json::Value>> {
     match clf::returns_rows(query) {
         true => {
