@@ -31,7 +31,12 @@ async fn test_lifecycle() {
     let _ = sqlx::query("CREATE EXTENSION pg_later CASCADE")
         .execute(&conn)
         .await
-        .expect("ffailed to create");
+        .expect("failed to create");
+
+    let _ = sqlx::query("SELECT pglater.init()")
+        .execute(&conn)
+        .await
+        .expect("failed to init");
 
     // simple select case
     let q0 = sqlx::query("SELECT pglater.exec('select 1')")
