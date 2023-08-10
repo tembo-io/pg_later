@@ -18,7 +18,7 @@ impl Default for Config {
         Self {
             pg_conn_str: from_env_default(
                 "DATABASE_URL",
-                "postgresql://postgres:postgres@localhost:5432/postgres",
+                "postgresql://adamhendel:@localhost:28815/pg_later",
             ),
             vectorize_socket_url: env::var("PGLATER_SOCKET_URL").ok(),
         }
@@ -62,7 +62,7 @@ pub fn from_env_default(key: &str, default: &str) -> String {
 pub async fn get_pg_conn() -> Result<Pool<Postgres>> {
     let opts = get_pg_options()?;
     let pgp = PgPoolOptions::new()
-        .acquire_timeout(std::time::Duration::from_secs(4))
+        .acquire_timeout(std::time::Duration::from_secs(10))
         .max_connections(4)
         .connect_with(opts)
         .await?;
@@ -107,8 +107,6 @@ fn get_pgc_tcp_opt(url: Url) -> Result<PgConnectOptions> {
 
 pub fn get_pg_options() -> Result<PgConnectOptions> {
     let cfg = Config::default();
-    log!("CONFIG!: {:?}", cfg);
-
     match cfg.vectorize_socket_url {
         Some(socket_url) => {
             log!("PGLATER_SOCKET_URL={:?}", socket_url);
@@ -119,7 +117,6 @@ pub fn get_pg_options() -> Result<PgConnectOptions> {
         None => {
             log!("DATABASE_URL={}", cfg.pg_conn_str);
             let url = Url::parse(&cfg.pg_conn_str)?;
-            log!("url: {:?}", url);
             get_pgc_tcp_opt(url)
         }
     }

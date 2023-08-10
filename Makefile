@@ -4,4 +4,4 @@ format:
 
 # run in pgrx
 run:
-	PG_LATER_DATABASE=pg_later cargo pgrx run
+	cargo pgrx run

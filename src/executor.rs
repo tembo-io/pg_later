@@ -6,8 +6,8 @@ use anyhow::Result;
 
 use crate::clf;
 
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
-pub struct JobMessage {
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PostgresType)]
+pub struct Job {
     pub query: String,
 }
 
@@ -22,6 +22,14 @@ async fn exec_row_query(query: &str, conn: &Pool<Postgres>) -> Result<Vec<serde_
     Ok(results)
 }
 
+// execute query that does not return rows
+async fn exec_utility(query: &str, conn: &Pool<Postgres>) -> Result<Vec<serde_json::Value>> {
+    let result = sqlx::query(query).execute(conn).await?;
+    Ok(vec![
+        serde_json::json!({ "rows_affected": result.rows_affected() }),
+    ])
+}
+
 pub async fn query_to_json(query: &str, conn: &Pool<Postgres>) -> Result<Vec<serde_json::Value>> {
     match clf::returns_rows(query) {
         true => {
@@ -30,22 +38,7 @@ pub async fn query_to_json(query: &str, conn: &Pool<Postgres>) -> Result<Vec<ser
         }
         false => {
             log!("utility statement");
-            exec_row_query(query, conn).await
+            exec_utility(query, conn).await
         }
     }
 }
-
-// #[cfg(any(test, feature = "pg_test"))]
-// #[pg_schema]
-// mod tests {
-//     use super::*;
-
-//     #[pg_test]
-//     fn test_json() {
-//         let q = query_to_json("select 1").expect("failed to execute query");
-//         assert_eq!(q.len(), 1);
-//         let q = query_to_json("CREATE TABLE IF NOT EXISTS YOLO(x text)")
-//             .expect("failed to execute query");
-//         assert_eq!(q.len(), 1);
-//     }
-// }
