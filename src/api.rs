@@ -1,8 +1,7 @@
+/// The user facing API
+///
 use pgrx::prelude::*;
 use pgrx::spi::SpiTupleTable;
-
-use crate::executor::JobMessage;
-use pgmq::PGMQueueExt;
 
 #[pg_extern]
 fn init() -> Result<bool, spi::Error> {
@@ -61,22 +60,4 @@ fn fetch_results(job_id: i64) -> Result<Option<pgrx::JsonB>, spi::Error> {
         }
     };
     Ok(Some(query_resultset))
-}
-
-// gets a job query from the queue
-pub async fn get_job(queue: &PGMQueueExt, timeout: i32) -> Option<pgmq::Message<JobMessage>> {
-    match queue.read::<JobMessage>("pg_later_jobs", timeout).await {
-        Ok(Some(job)) => Some(job),
-        Ok(None) => None,
-        Err(e) => {
-            log!("pg-later: error, {:?}", e);
-            None
-        }
-    }
-}
-
-pub fn delete_from_queue(msg_id: i64) -> Result<(), spi::Error> {
-    let del = format!("select pgmq_delete('pg_later_jobs', {msg_id})");
-    let _: bool = Spi::get_one(&del)?.expect("failed to send message to queue");
-    Ok(())
 }
