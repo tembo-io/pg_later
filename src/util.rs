@@ -18,7 +18,7 @@ impl Default for Config {
         Self {
             pg_conn_str: from_env_default(
                 "DATABASE_URL",
-                "postgresql://adamhendel:@localhost:28815/pg_later",
+                "postgresql://postgres:postgres@0.0.0.0:5432/postgres",
             ),
             vectorize_socket_url: env::var("PGLATER_SOCKET_URL").ok(),
         }
