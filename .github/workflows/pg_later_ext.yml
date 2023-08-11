@@ -41,7 +41,9 @@ jobs:
          chmod +x stoml
          sudo mv stoml /usr/local/bin/
          cargo install pg-trunk
-
+      - uses: ./.github/actions/pgx-init
+        with:
+          working-directory: ./
       - name: Cache binaries
         uses: actions/cache@v2
         with:
