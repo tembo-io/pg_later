@@ -50,6 +50,7 @@ jobs:
           path: |
             /usr/local/bin/stoml
             ~/.cargo/bin/trunk
+            ~/.pgrx
           key: ${{ runner.os }}-bins-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-bins-
