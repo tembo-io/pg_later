@@ -1,3 +1,5 @@
+/// The user facing API
+///
 use pgrx::prelude::*;
 use pgrx::spi::SpiTupleTable;
 
@@ -58,60 +60,4 @@ fn fetch_results(job_id: i64) -> Result<Option<pgrx::JsonB>, spi::Error> {
         }
     };
     Ok(Some(query_resultset))
-}
-
-// gets a job query from the queue
-pub fn get_job(timeout: i64) -> Option<(i64, String)> {
-    let job = match poll_queue(timeout) {
-        Ok(Some(j)) => Some(j),
-        Ok(None) => None,
-        Err(e) => {
-            log!("pg-later: error, {:?}", e);
-            None
-        }
-    };
-    match job {
-        Some(job) => {
-            let msg_id = job[0].0;
-            let m = serde_json::to_value(&job[0].1).expect("failed parsing jsonb");
-            let q = m["query"].as_str().expect("no query").to_owned();
-            Some((msg_id, q))
-        }
-        None => None,
-    }
-}
-
-fn poll_queue(timeout: i64) -> Result<Option<Vec<(i64, pgrx::JsonB)>>, spi::Error> {
-    let mut results: Vec<(i64, pgrx::JsonB)> = Vec::new();
-
-    let query =
-        format!("select msg_id, message from public.pgmq_read('pg_later_jobs' ,{timeout}, 1)");
-
-    let _: Result<(), spi::Error> = Spi::connect(|mut client| {
-        let tup_table_handle: Result<SpiTupleTable, spi::Error> = client.update(&query, None, None);
-        let tup_table = match tup_table_handle {
-            Ok(t) => t,
-            Err(e) => {
-                log!("pg-later: error, {:?}", e);
-                return Ok(());
-            }
-        };
-        for row in tup_table {
-            let msg_id = row["msg_id"].value::<i64>()?.expect("no msg_id");
-            let message = row["message"].value::<pgrx::JsonB>()?.expect("no message");
-            results.push((msg_id, message));
-        }
-        Ok(())
-    });
-    if results.is_empty() {
-        Ok(None)
-    } else {
-        Ok(Some(results))
-    }
-}
-
-pub fn delete_from_queue(msg_id: i64) -> Result<(), spi::Error> {
-    let del = format!("select pgmq_delete('pg_later_jobs', {msg_id})");
-    let _: bool = Spi::get_one(&del)?.expect("failed to send message to queue");
-    Ok(())
 }

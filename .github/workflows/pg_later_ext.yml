@@ -41,7 +41,6 @@ jobs:
          chmod +x stoml
          sudo mv stoml /usr/local/bin/
          cargo install pg-trunk
-
       - name: Cache binaries
         uses: actions/cache@v2
         with:
@@ -112,10 +111,20 @@ jobs:
         run: |
           pgrx15_config=$(/usr/local/bin/stoml ~/.pgrx/config.toml configs.pg15)
           echo "shared_preload_libraries = 'pg_later'" >> ~/.pgrx/data-15/postgresql.conf
-          ~/.cargo/bin/trunk install pgmq --pg-config ${pgrx15_config}
+          ~/.cargo/bin/trunk install pgmq --version 0.11.2 --pg-config ${pgrx15_config}
           pg_version=$(stoml Cargo.toml features.default)
+          export PGLATER_SOCKET_URL="postgresql:///pg_later?host=/home/runner/.pgrx&user=${USER}&dbname=postgres&port=28815"
+          cargo pgrx install --pg-config ${pgrx15_config}
           cargo pgrx run ${pg_version} --pgcli || true
+          cargo pgrx start ${pg_version}
           cargo pgrx test ${pg_version}
+      - name: Debugging information
+        if: always()
+        run: |
+          set +e
+          set -x
+          echo "=========="
+          cat ~/.pgrx/15.log
 
   publish:
     # only publish off main branch

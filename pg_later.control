@@ -3,5 +3,5 @@ default_version = '@CARGO_VERSION@'
 module_pathname = '$libdir/pg_later'
 relocatable = false
 superuser = true
-requires = 'pgmq'
 schema = 'pglater'
+requires = 'pgmq'

@@ -6,14 +6,7 @@ mod api;
 mod bgw;
 mod clf;
 mod executor;
-
-extension_sql!(
-    "
-    CREATE EXTENSION IF NOT EXISTS pgmq CASCADE;
-    ",
-    name = "pg_later_setup",
-    bootstrap,
-);
+mod util;
 
 /// This module is required by `cargo pgrx test` invocations.
 /// It must be visible at the root of your extension crate.
