@@ -114,7 +114,7 @@ jobs:
           echo "shared_preload_libraries = 'pg_later'" >> ~/.pgrx/data-15/postgresql.conf
           ~/.cargo/bin/trunk install pgmq --version 0.11.2 --pg-config ${pgrx15_config}
           pg_version=$(stoml Cargo.toml features.default)
-          export PGLATER_SOCKET_URL='postgresql:///pg_later?host=/Users/${USER}/.pgrx&user=${USER}&dbname=pg_later&port=28815'
+          export PGLATER_SOCKET_URL='postgresql:///pg_later?host=/home/runner/.pgrx&user=${USER}&dbname=pg_later&port=28815'
           cargo pgrx run ${pg_version} --pgcli || true
           cargo pgrx test ${pg_version}
       - name: Debugging information
