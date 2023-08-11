@@ -18,7 +18,7 @@ async fn connect(url: &str) -> Pool<Postgres> {
 async fn test_lifecycle() {
     let username = whoami::username();
     let conn = connect(&format!(
-        "postgres://{username}:postgres@localhost:28815/pg_later"
+        "postgres://{username}:postgres@localhost:28815/postgres"
     ))
     .await;
     let mut rng = rand::thread_rng();
