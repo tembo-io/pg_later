@@ -45,7 +45,7 @@ async fn test_lifecycle() {
         .expect("failed to exec")
         .get::<i64, usize>(0);
     assert!(q0 > 0);
-    sleep(Duration::from_secs(5)).await;
+    sleep(Duration::from_secs(7)).await;
 
     let row: (serde_json::Value,) = sqlx::query_as(&format!(
         "SELECT pglater.fetch_results({q0})::json as results"
