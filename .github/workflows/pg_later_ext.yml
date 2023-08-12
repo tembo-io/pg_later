@@ -19,37 +19,37 @@ on:
       - 'pglater-pg/**'
 
 jobs:
-  # dependencies:
-  #   name: Install dependencies
-  #   runs-on: ubuntu-22.04
-  #   steps:
-  #     - uses: actions/checkout@v2
+  dependencies:
+    name: Install dependencies
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
 
-  #     # rust needed to install trunk
-  #     - name: Install Rust stable toolchain
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #         toolchain: stable
-  #         cache-directories: /home/runner/.pgrx
+      # rust needed to install trunk
+      - name: Install Rust stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          cache-directories: /home/runner/.pgrx
 
-  #     - name: Install stoml and pg-trunk
-  #       shell: bash
-  #       run: |
-  #        set -xe
-  #        wget https://github.com/freshautomations/stoml/releases/download/v0.7.1/stoml_linux_amd64 &> /dev/null
-  #        mv stoml_linux_amd64 stoml
-  #        chmod +x stoml
-  #        sudo mv stoml /usr/local/bin/
-  #        cargo install pg-trunk
-  #     - name: Cache binaries
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: |
-  #           /usr/local/bin/stoml
-  #           ~/.cargo/bin/trunk
-  #         key: ${{ runner.os }}-bins-${{ github.sha }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-bins-
+      - name: Install stoml and pg-trunk
+        shell: bash
+        run: |
+         set -xe
+         wget https://github.com/freshautomations/stoml/releases/download/v0.7.1/stoml_linux_amd64 &> /dev/null
+         mv stoml_linux_amd64 stoml
+         chmod +x stoml
+         sudo mv stoml /usr/local/bin/
+         cargo install pg-trunk
+      - name: Cache binaries
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/local/bin/stoml
+            ~/.cargo/bin/trunk
+          key: ${{ runner.os }}-bins-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-bins-
   # lint:
   #   name: Run linters
   #   runs-on: ubuntu-22.04
@@ -130,7 +130,7 @@ jobs:
     # only publish off main branch
     if: github.ref == 'refs/heads/main'
     name: trunk publish
-    # needs: dependencies
+    needs: dependencies
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
@@ -179,11 +179,11 @@ jobs:
         id: versions
         run: |
           echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          echo "TAG_VER=v0.0.9" >> $GITHUB_OUTPUT
+          echo "TAG_VER=$(stoml Trunk.toml extension.version)" >> $GITHUB_OUTPUT
 # echo "TAG_VER=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
       - name: Build and upload image
         run: |
-          docker build -t pglater-pg images/pglater-pg
+          docker build --build-arg=$ -t pglater-pg images/pglater-pg
           docker tag pglater-pg quay.io/tembo/pglater-pg:${{ steps.versions.outputs.TAG_VER }}
           docker tag pglater-pg quay.io/tembo/pglater-pg:latest
       - name: Login to Quay
