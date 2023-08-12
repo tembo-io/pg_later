@@ -165,7 +165,9 @@ jobs:
         run:  ~/.cargo/bin/trunk publish
   build_and_push:
     name: Build and push images
-    # needs: publish
+    needs: 
+      # - publish
+      - dependencies
     runs-on:
       - self-hosted
       - dind
@@ -175,6 +177,15 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
+      - name: Restore cached binaries
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/local/bin/stoml
+            ~/.cargo/bin/trunk
+          key: ${{ runner.os }}-bins-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-bins-
       - name: Set version strings
         id: versions
         run: |
