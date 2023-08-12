@@ -163,3 +163,35 @@ jobs:
         env:
           TRUNK_API_TOKEN: ${{ secrets.TRUNK_AUTH_TOKEN }}
         run:  ~/.cargo/bin/trunk publish
+  build_and_push:
+    name: Build and push images
+    # needs: publish
+    runs-on:
+      - self-hosted
+      - dind
+      - large-8x8
+    outputs:
+      short_sha: ${{ steps.versions.outputs.SHORT_SHA }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      - name: Set version strings
+        id: versions
+        run: |
+          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "TAG_VER=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      - name: Build and upload image
+        run: |
+          docker build -t pglater-pg images/pglater-pg
+          docker tag pglater-pg quay.io/tembo/pglater-pg:${{ steps.versions.outputs.TAG_VER }}
+          docker tag pglater-pg quay.io/tembo/pglater-pg:latest
+      - name: Login to Quay
+        uses: docker/login-action@v2
+        with:
+          registry: quay.io/tembo
+          username: ${{ secrets.QUAY_USER }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+      - name: Push image
+        run: |
+          docker push pglater-pg quay.io/tembo/pglater-pg:${{ steps.versions.outputs.TAG_VER }}
+          docker push pglater-pg quay.io/tembo/pglater-pg:latest
