@@ -194,7 +194,7 @@ jobs:
 # echo "TAG_VER=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
       - name: Build and upload image
         run: |
-          docker build --build-arg=$ -t pglater-pg images/pglater-pg
+          docker build --build-arg="PG_LATER_VER=${{ steps.versions.outputs.TAG_VER }}" -t pglater-pg images/pglater-pg
           docker tag pglater-pg quay.io/tembo/pglater-pg:${{ steps.versions.outputs.TAG_VER }}
           docker tag pglater-pg quay.io/tembo/pglater-pg:latest
       - name: Login to Quay
