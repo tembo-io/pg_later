@@ -17,6 +17,9 @@ on:
       - main
     paths-ignore:
       - 'pglater-pg/**'
+  release:
+    types: 
+      - created
 
 jobs:
   dependencies:
