@@ -19,37 +19,37 @@ on:
       - 'pglater-pg/**'
 
 jobs:
-  dependencies:
-    name: Install dependencies
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v2
+  # dependencies:
+  #   name: Install dependencies
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      # rust needed to install trunk
-      - name: Install Rust stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          cache-directories: /home/runner/.pgrx
+  #     # rust needed to install trunk
+  #     - name: Install Rust stable toolchain
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: stable
+  #         cache-directories: /home/runner/.pgrx
 
-      - name: Install stoml and pg-trunk
-        shell: bash
-        run: |
-         set -xe
-         wget https://github.com/freshautomations/stoml/releases/download/v0.7.1/stoml_linux_amd64 &> /dev/null
-         mv stoml_linux_amd64 stoml
-         chmod +x stoml
-         sudo mv stoml /usr/local/bin/
-         cargo install pg-trunk
-      - name: Cache binaries
-        uses: actions/cache@v2
-        with:
-          path: |
-            /usr/local/bin/stoml
-            ~/.cargo/bin/trunk
-          key: ${{ runner.os }}-bins-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-bins-
+  #     - name: Install stoml and pg-trunk
+  #       shell: bash
+  #       run: |
+  #        set -xe
+  #        wget https://github.com/freshautomations/stoml/releases/download/v0.7.1/stoml_linux_amd64 &> /dev/null
+  #        mv stoml_linux_amd64 stoml
+  #        chmod +x stoml
+  #        sudo mv stoml /usr/local/bin/
+  #        cargo install pg-trunk
+  #     - name: Cache binaries
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: |
+  #           /usr/local/bin/stoml
+  #           ~/.cargo/bin/trunk
+  #         key: ${{ runner.os }}-bins-${{ github.sha }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-bins-
   # lint:
   #   name: Run linters
   #   runs-on: ubuntu-22.04
@@ -130,7 +130,7 @@ jobs:
     # only publish off main branch
     if: github.ref == 'refs/heads/main'
     name: trunk publish
-    needs: dependencies
+    # needs: dependencies
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
@@ -165,9 +165,9 @@ jobs:
         run:  ~/.cargo/bin/trunk publish
   build_and_push:
     name: Build and push images
-    needs: 
+    # needs: 
       # - publish
-      - dependencies
+      # - dependencies
     runs-on:
       - self-hosted
       - dind
@@ -177,15 +177,14 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
-      - name: Restore cached binaries
-        uses: actions/cache@v2
-        with:
-          path: |
-            /usr/local/bin/stoml
-            ~/.cargo/bin/trunk
-          key: ${{ runner.os }}-bins-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-bins-
+      - name: Install stoml and pg-trunk
+        shell: bash
+        run: |
+         set -xe
+         wget https://github.com/freshautomations/stoml/releases/download/v0.7.1/stoml_linux_amd64 &> /dev/null
+         mv stoml_linux_amd64 stoml
+         chmod +x stoml
+         sudo mv stoml /usr/local/bin/
       - name: Set version strings
         id: versions
         run: |
@@ -195,7 +194,7 @@ jobs:
       - name: Build and upload image
         run: |
           docker build --build-arg="PG_LATER_VER=${{ steps.versions.outputs.TAG_VER }}" -t pglater-pg images/pglater-pg
-          docker tag pglater-pg quay.io/tembo/pglater-pg:${{ steps.versions.outputs.TAG_VER }}
+          docker tag pglater-pg quay.io/tembo/pglater-pg:v${{ steps.versions.outputs.TAG_VER }}
           docker tag pglater-pg quay.io/tembo/pglater-pg:latest
       - name: Login to Quay
         uses: docker/login-action@v2
@@ -205,5 +204,5 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
       - name: Push image
         run: |
-          docker push pglater-pg quay.io/tembo/pglater-pg:${{ steps.versions.outputs.TAG_VER }}
+          docker push pglater-pg quay.io/tembo/pglater-pg:v${{ steps.versions.outputs.TAG_VER }}
           docker push pglater-pg quay.io/tembo/pglater-pg:latest
