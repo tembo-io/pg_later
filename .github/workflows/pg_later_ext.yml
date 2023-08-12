@@ -190,7 +190,7 @@ jobs:
         id: versions
         run: |
           echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          echo "TAG_VER=$(stoml Trunk.toml extension.version)" >> $GITHUB_OUTPUT
+          echo "TAG_VER=$(/usr/local/bin/stoml Trunk.toml extension.version)" >> $GITHUB_OUTPUT
 # echo "TAG_VER=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
       - name: Build and upload image
         run: |
