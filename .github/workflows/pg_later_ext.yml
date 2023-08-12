@@ -19,118 +19,118 @@ on:
       - 'pglater-pg/**'
 
 jobs:
-  # dependencies:
-  #   name: Install dependencies
-  #   runs-on: ubuntu-22.04
-  #   steps:
-  #     - uses: actions/checkout@v2
+  dependencies:
+    name: Install dependencies
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
 
-  #     # rust needed to install trunk
-  #     - name: Install Rust stable toolchain
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #         toolchain: stable
-  #         cache-directories: /home/runner/.pgrx
+      # rust needed to install trunk
+      - name: Install Rust stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          cache-directories: /home/runner/.pgrx
 
-  #     - name: Install stoml and pg-trunk
-  #       shell: bash
-  #       run: |
-  #        set -xe
-  #        wget https://github.com/freshautomations/stoml/releases/download/v0.7.1/stoml_linux_amd64 &> /dev/null
-  #        mv stoml_linux_amd64 stoml
-  #        chmod +x stoml
-  #        sudo mv stoml /usr/local/bin/
-  #        cargo install pg-trunk
-  #     - name: Cache binaries
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: |
-  #           /usr/local/bin/stoml
-  #           ~/.cargo/bin/trunk
-  #         key: ${{ runner.os }}-bins-${{ github.sha }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-bins-
-  # lint:
-  #   name: Run linters
-  #   runs-on: ubuntu-22.04
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Install Rust minimal nightly with clippy and rustfmt
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #         profile: minimal
-  #         toolchain: nightly
-  #         components: rustfmt, clippy
-  #     - uses: Swatinem/rust-cache@v2
-  #       with:
-  #         prefix-key: "pg_later-extension-lint"
-  #         workspaces: |
-  #           pg_later/
-  #         # Additional directories to cache
-  #         cache-directories: |
-  #           /home/runner/.pgrx
-  #     - uses: ./.github/actions/pgx-init
-  #       with:
-  #         working-directory: ./
-  #     - name: Cargo format
-  #       run: cargo +nightly fmt --all --check
-  #     - name: Clippy
-  #       run: cargo clippy
+      - name: Install stoml and pg-trunk
+        shell: bash
+        run: |
+         set -xe
+         wget https://github.com/freshautomations/stoml/releases/download/v0.7.1/stoml_linux_amd64 &> /dev/null
+         mv stoml_linux_amd64 stoml
+         chmod +x stoml
+         sudo mv stoml /usr/local/bin/
+         cargo install pg-trunk
+      - name: Cache binaries
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/local/bin/stoml
+            ~/.cargo/bin/trunk
+          key: ${{ runner.os }}-bins-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-bins-
+  lint:
+    name: Run linters
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust minimal nightly with clippy and rustfmt
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: "pg_later-extension-lint"
+          workspaces: |
+            pg_later/
+          # Additional directories to cache
+          cache-directories: |
+            /home/runner/.pgrx
+      - uses: ./.github/actions/pgx-init
+        with:
+          working-directory: ./
+      - name: Cargo format
+        run: cargo +nightly fmt --all --check
+      - name: Clippy
+        run: cargo clippy
 
-  # test:
-  #   name: Run tests
-  #   needs: dependencies
-  #   runs-on: ubuntu-22.04
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Install Rust stable toolchain
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #         toolchain: stable
-  #     - uses: Swatinem/rust-cache@v2
-  #       with:
-  #         prefix-key: "pg_later-extension-test"
-  #         workspaces: |
-  #           pg_later
-  #         # Additional directories to cache
-  #         cache-directories: |
-  #           /home/runner/.pgrx
-  #     - uses: ./.github/actions/pgx-init
-  #       with:
-  #         working-directory: ./
-  #     - name: Restore cached binaries
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: |
-  #           /usr/local/bin/stoml
-  #           ~/.cargo/bin/trunk
-  #         key: ${{ runner.os }}-bins-${{ github.sha }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-bins-
-  #     - name: test
-  #       run: |
-  #         pgrx15_config=$(/usr/local/bin/stoml ~/.pgrx/config.toml configs.pg15)
-  #         echo "shared_preload_libraries = 'pg_later'" >> ~/.pgrx/data-15/postgresql.conf
-  #         ~/.cargo/bin/trunk install pgmq --version 0.11.2 --pg-config ${pgrx15_config}
-  #         pg_version=$(stoml Cargo.toml features.default)
-  #         export PGLATER_SOCKET_URL="postgresql:///pg_later?host=/home/runner/.pgrx&user=${USER}&dbname=postgres&port=28815"
-  #         cargo pgrx install --pg-config ${pgrx15_config}
-  #         cargo pgrx run ${pg_version} --pgcli || true
-  #         cargo pgrx start ${pg_version}
-  #         cargo pgrx test ${pg_version}
-  #     - name: Debugging information
-  #       if: always()
-  #       run: |
-  #         set +e
-  #         set -x
-  #         echo "=========="
-  #         cat ~/.pgrx/15.log
+  test:
+    name: Run tests
+    needs: dependencies
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: "pg_later-extension-test"
+          workspaces: |
+            pg_later
+          # Additional directories to cache
+          cache-directories: |
+            /home/runner/.pgrx
+      - uses: ./.github/actions/pgx-init
+        with:
+          working-directory: ./
+      - name: Restore cached binaries
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/local/bin/stoml
+            ~/.cargo/bin/trunk
+          key: ${{ runner.os }}-bins-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-bins-
+      - name: test
+        run: |
+          pgrx15_config=$(/usr/local/bin/stoml ~/.pgrx/config.toml configs.pg15)
+          echo "shared_preload_libraries = 'pg_later'" >> ~/.pgrx/data-15/postgresql.conf
+          ~/.cargo/bin/trunk install pgmq --version 0.11.2 --pg-config ${pgrx15_config}
+          pg_version=$(stoml Cargo.toml features.default)
+          export PGLATER_SOCKET_URL="postgresql:///pg_later?host=/home/runner/.pgrx&user=${USER}&dbname=postgres&port=28815"
+          cargo pgrx install --pg-config ${pgrx15_config}
+          cargo pgrx run ${pg_version} --pgcli || true
+          cargo pgrx start ${pg_version}
+          cargo pgrx test ${pg_version}
+      - name: Debugging information
+        if: always()
+        run: |
+          set +e
+          set -x
+          echo "=========="
+          cat ~/.pgrx/15.log
 
   publish:
     # only publish off main branch
     if: github.ref == 'refs/heads/main'
     name: trunk publish
-    # needs: dependencies
+    needs: dependencies
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
@@ -165,9 +165,8 @@ jobs:
         run:  ~/.cargo/bin/trunk publish
   build_and_push:
     name: Build and push images
-    # needs: 
-      # - publish
-      # - dependencies
+    needs: 
+      - publish
     runs-on:
       - self-hosted
       - dind
