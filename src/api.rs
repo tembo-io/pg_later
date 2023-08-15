@@ -3,23 +3,6 @@
 use pgrx::prelude::*;
 use pgrx::spi::SpiTupleTable;
 
-#[pg_extern]
-fn init() -> Result<bool, spi::Error> {
-    let setup_queries = [
-        "select pgmq_create_non_partitioned('pg_later_jobs')",
-        "select pgmq_create_non_partitioned('pg_later_results')",
-    ];
-    for q in setup_queries {
-        let ran: Result<_, spi::Error> = Spi::connect(|mut c| {
-            let _ = c.update(q, None, None)?;
-            Ok(())
-        });
-
-        ran?
-    }
-    Ok(true)
-}
-
 /// send a query to be executed by the next available worker
 #[pg_extern]
 pub fn exec(query: &str) -> Result<i64, spi::Error> {

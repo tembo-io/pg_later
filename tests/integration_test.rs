@@ -33,11 +33,6 @@ async fn test_lifecycle() {
         .await
         .expect("failed to create");
 
-    let _ = sqlx::query("SELECT pglater.init()")
-        .execute(&conn)
-        .await
-        .expect("failed to init");
-
     // simple select case
     let q0 = sqlx::query("SELECT pglater.exec('select 1')")
         .fetch_one(&conn)
