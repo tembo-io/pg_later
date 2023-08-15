@@ -8,6 +8,8 @@ mod clf;
 mod executor;
 mod util;
 
+extension_sql_file!("../sql/pgmq.sql");
+
 /// This module is required by `cargo pgrx test` invocations.
 /// It must be visible at the root of your extension crate.
 #[cfg(test)]
