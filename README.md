@@ -11,19 +11,8 @@ A postgres extension to execute queries asynchronously.
 docker run -p 5432:5432 -e POSTGRES_PASSWORD=postgres quay.io/tembo/pglater-pg:latest
 ```
 
-### Install from source
+If you'd like to build from source, you can follow the instructions in [CONTRIBUTING.md](https://github.com/tembo-io/pg_later/blob/main/CONTRIBUTING.md).
 
-Add pg_later to shared_preload_libraries in postgresql.conf:
-
-```text
-shared_preload_libraries = 'pg_later'
-```
-
-Clone the repository, build and run the extension with [pgrx](https://github.com/pgcentralfoundation/pgrx):
-
-```bash
-cargo pgrx run pg15
-```
 
 ### Using the extension
 
