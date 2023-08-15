@@ -31,8 +31,6 @@ Initialize the extension's backend:
 
 ```sql
 CREATE EXTENSION pg_later CASCADE;
-
-SELECT pglater.init();
 ```
 
 Execute a SQL query now:
