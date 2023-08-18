@@ -3,6 +3,8 @@ Execute SQL now and get the results later.
 
 A postgres extension to execute queries asynchronously. 
 
+[![Static Badge](https://img.shields.io/badge/%40tembo-community?logo=slack&label=slack)](https://join.slack.com/t/tembocommunity/shared_invite/zt-20dtnhcmo-pLNV7_Aobi50TdTLpfQ~EQ)
+
 ## Installation
 
 ### Run with docker
