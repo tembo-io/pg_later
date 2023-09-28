@@ -6,8 +6,8 @@ use pgrx::spi::SpiTupleTable;
 #[pg_extern]
 fn init() -> Result<bool, spi::Error> {
     let setup_queries = [
-        "select pgmq_create_non_partitioned('pg_later_jobs')",
-        "select pgmq_create_non_partitioned('pg_later_results')",
+        "select pgmq.create_non_partitioned('pg_later_jobs')",
+        "select pgmq.create_non_partitioned('pg_later_results')",
     ];
     for q in setup_queries {
         let ran: Result<_, spi::Error> = Spi::connect(|mut c| {
@@ -26,7 +26,7 @@ pub fn exec(query: &str) -> Result<i64, spi::Error> {
     let msg = serde_json::json!({
         "query": query.replace('\'', "''").replace(';', ""),
     });
-    let enqueue = format!("select pgmq_send('pg_later_jobs', '{msg}'::jsonb)");
+    let enqueue = format!("select pgmq.send('pg_later_jobs', '{msg}'::jsonb)");
     log!("pg-later: sending query to queue: {query}");
     let msg_id: i64 = Spi::get_one(&enqueue)?.expect("failed to send message to queue");
     Ok(msg_id)
@@ -36,7 +36,7 @@ pub fn exec(query: &str) -> Result<i64, spi::Error> {
 #[pg_extern]
 fn fetch_results(job_id: i64) -> Result<Option<pgrx::JsonB>, spi::Error> {
     let query = format!(
-        "select * from pgmq_pg_later_results
+        "select * from pgmq.q_pg_later_results
         where message->>'job_id' = '{job_id}'
         "
     );
