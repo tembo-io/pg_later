@@ -18,7 +18,7 @@ on:
     paths-ignore:
       - 'pglater-pg/**'
   release:
-    types: 
+    types:
       - created
 
 jobs:
@@ -114,7 +114,7 @@ jobs:
         run: |
           pgrx15_config=$(/usr/local/bin/stoml ~/.pgrx/config.toml configs.pg15)
           echo "shared_preload_libraries = 'pg_later'" >> ~/.pgrx/data-15/postgresql.conf
-          ~/.cargo/bin/trunk install pgmq --version 0.11.2 --pg-config ${pgrx15_config}
+          ~/.cargo/bin/trunk install pgmq --version 0.28.0 --pg-config ${pgrx15_config}
           pg_version=$(stoml Cargo.toml features.default)
           export PGLATER_SOCKET_URL="postgresql:///pg_later?host=/home/runner/.pgrx&user=${USER}&dbname=postgres&port=28815"
           cargo pgrx install --pg-config ${pgrx15_config}
@@ -167,7 +167,7 @@ jobs:
         run:  ~/.cargo/bin/trunk publish
   build_and_push:
     name: Build and push images
-    needs: 
+    needs:
       - publish
     runs-on:
       - self-hosted

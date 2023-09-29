@@ -91,7 +91,8 @@ async fn ready(conn: &Pool<Postgres>) -> bool {
         "SELECT EXISTS (
             SELECT 1
             FROM pg_tables
-            WHERE tablename = 'pgmq_pg_later_jobs'
+            WHERE schemaname = 'pgmq'
+            AND tablename = 'q_pg_later_jobs'
         );",
     )
     .fetch_one(conn)
