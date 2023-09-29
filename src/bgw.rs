@@ -92,7 +92,7 @@ async fn ready(conn: &Pool<Postgres>) -> bool {
             SELECT 1
             FROM pg_tables
             WHERE schemaname = 'pgmq'
-            WHERE tablename = 'q_pg_later_jobs'
+            AND tablename = 'q_pg_later_jobs'
         );",
     )
     .fetch_one(conn)
