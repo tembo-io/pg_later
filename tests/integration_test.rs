@@ -1,11 +1,10 @@
-use pgmq;
 use rand::Rng;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres, Row};
 use tokio::time::{sleep, Duration};
 
 async fn connect(url: &str) -> Pool<Postgres> {
-    let options = pgmq::util::conn_options(url).expect("failed to parse url");
+    let options = pgmq_core::util::conn_options(url).expect("failed to parse url");
     PgPoolOptions::new()
         .acquire_timeout(std::time::Duration::from_secs(10))
         .max_connections(5)

@@ -33,6 +33,7 @@ pgrx-tests = "=0.9.8"
 rand = "0.8.5"
 tokio = { version = "1", features = ["macros"] }
 whoami = "1.4.0"
+pgmq-core = "0.6.1"
 
 [profile.dev]
 panic = "unwind"
