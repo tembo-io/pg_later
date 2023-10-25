@@ -1,7 +1,7 @@
 FROM quay.io/tembo/tembo-pg-cnpg:latest
 
-ARG PG_LATER_VER=0.0.10
-ARG PGMQ_VER=0.31.0
+ARG PG_LATER_VER=0.0.12
+ARG PGMQ_VER=0.32.1
 
 USER root
 RUN chown -R postgres:postgres $PGDATA && \
