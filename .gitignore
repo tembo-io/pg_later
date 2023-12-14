@@ -3,6 +3,5 @@
 /target
 *.iml
 **/*.rs.bk
-Cargo.lock
 .env
 .trunk
