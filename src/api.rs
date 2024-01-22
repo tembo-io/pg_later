@@ -22,11 +22,11 @@ fn init() -> Result<bool, spi::Error> {
 
 /// send a query to be executed by the next available worker
 #[pg_extern]
-pub fn exec(query: &str) -> Result<i64, spi::Error> {
+pub fn exec(query: &str, delay: default!(i64, 0)) -> Result<i64, spi::Error> {
     let msg = serde_json::json!({
         "query": query.replace('\'', "''").replace(';', ""),
     });
-    let enqueue = format!("select pgmq.send('pg_later_jobs', '{msg}'::jsonb)");
+    let enqueue = format!("select pgmq.send('pg_later_jobs', '{msg}'::jsonb, {delay})");
     log!("pg-later: sending query to queue: {query}");
     let msg_id: i64 = Spi::get_one(&enqueue)?.expect("failed to send message to queue");
     Ok(msg_id)
