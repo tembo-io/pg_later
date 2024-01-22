@@ -35,6 +35,30 @@ and install against an existing Postgres setup or develop against pgrx managed
 development environment (which installs and allows you to test against multiple
 Postgres versions).
 
+## Develop inside container
+
+You can use this command to setup a development environment. You will need Docker running.
+
+```
+docker build -t local-dev-pg-later . && docker run -it --rm -v  $(pwd):/app local-dev-pg-later /bin/bash
+```
+
+When the above command completes, you will have a shell inside of a container with the necessary dependencies installed, and the code shared between the container and your workstation.
+
+Start postgres inside the container like this:
+
+```
+cargo pgrx run
+```
+
+If you are running on a ARM machine, then you will get a warning message like this, which you can ignore `<jemalloc>: MADV_DONTNEED does not work`. When that's done building the local version of your source code for pg_later, then you will be in a psql shell.
+
+Create extension like this:
+
+```
+CREATE EXTENSION pg_later cascade;
+```
+
 ### Install to a pre-existing Postgres
 
 Initialize `cargo-pgrx`, and tell it the path to the your `pg_config`. For example,
@@ -75,7 +99,7 @@ CREATE EXTENSION pg_later cascade;
 
 # Releases and versioning
 
-`pg_later` Postgres Extension releases are automated through a [Github workflow](https://github.com/tembo-io/pg_later/blob/main/.github/workflows/pg_later_ext.yml). 
-The compiled binaries are publish to and hosted at [pgt.dev](https://pgt.dev). To create a release, create a new tag follow a valid [semver](https://semver.org/), then create a release with the same name. 
-This release must match the version found in Cargo.toml. 
+`pg_later` Postgres Extension releases are automated through a [Github workflow](https://github.com/tembo-io/pg_later/blob/main/.github/workflows/pg_later_ext.yml).
+The compiled binaries are publish to and hosted at [pgt.dev](https://pgt.dev). To create a release, create a new tag follow a valid [semver](https://semver.org/), then create a release with the same name.
+This release must match the version found in Cargo.toml.
 Auto-generate the release notes and/or add more relevant details as needed.
