@@ -15,11 +15,12 @@ docker run -d --name pglater-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 quay.
 To build `pg_later` from source, you need
 * A toolchain capable of building Postgres
 * Rust toolchain
-* [pg_partman](https://github.com/pgpartman/pg_partman).
+* [pgmq](https://github.com/tembo-io/pgmq).
 
 Once you have those pre-requisites, you need to setup `pgrx`.
 
 ```bash
+# Find the version of PGRX to install from in Cargo.toml
 cargo install --locked cargo-pgrx --version 0.9.8
 ```
 

@@ -10,4 +10,5 @@ RUN chown -R postgres:postgres /usr/lib/postgresql
 USER postgres
 
 RUN trunk install pgmq
-RUN trunk install pg_partman
+RUN echo "shared_preload_libraries = 'pg_later'" >> ~/.pgrx/data-15/postgresql.conf
+ENV DATABASE_URL="postgres://postgres:postgres@localhost:28815/pg_later"
