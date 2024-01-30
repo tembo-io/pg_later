@@ -8,7 +8,7 @@
    ],
    "license": "postgresql",
    "provides": {
-      "pgmq": {
+      "pg_later": {
          "abstract": "Run queries now and get results later",
          "file": "src/lib.rs",
          "docfile": "README.md",
