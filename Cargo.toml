@@ -32,6 +32,7 @@ sqlx = { version = "0.7.3", features = [
 tokio = "1.29.1"
 url = "2.4.0"
 postgres-types = "0.2.5"
+sqlparser = "0.43.1"
 
 
 [dev-dependencies]
