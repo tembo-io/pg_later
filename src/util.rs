@@ -10,7 +10,8 @@ use crate::guc;
 #[derive(Clone, Debug)]
 pub struct Config {
     pub pg_conn_str: String,
-    pub socket_url: Option<String>,
+    pub env_socket_url: Option<String>,
+    pub guc_host: Option<String>,
 }
 
 impl Default for Config {
@@ -20,21 +21,13 @@ impl Default for Config {
                 "DATABASE_URL",
                 "postgresql://postgres:postgres@0.0.0.0:5432/postgres",
             ),
-            socket_url: {
-                let guc_socket = guc::get_guc(guc::PglaterGUC::SocketHost);
-                let env_socket = env::var("PGLATER_SOCKET_URL").ok();
-                // return guc if its provided, otherwise try to return from env
-                // if both are not provided, this will be None
-                match guc_socket {
-                    Some(s) => Some(s),
-                    None => env_socket,
-                }
-            },
+            env_socket_url: env::var("PGLATER_SOCKET_URL").ok(),
+            guc_host: guc::get_guc(guc::PglaterGUC::Host),
         }
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct PostgresSocketConnection {
     user: Option<String>,
     dbname: Option<String>,
@@ -81,6 +74,7 @@ pub async fn get_pg_conn() -> Result<Pool<Postgres>> {
 pub fn get_pgc_socket_opt(socket_conn: PostgresSocketConnection) -> Result<PgConnectOptions> {
     let mut opts = PgConnectOptions::new();
     opts = opts.socket(socket_conn.host.expect("missing socket host"));
+    log!("socket options: {:?}", opts);
     if socket_conn.port.is_some() {
         opts = opts.port(socket_conn.port.expect("missing socket port"));
     } else {
@@ -116,17 +110,49 @@ fn get_pgc_tcp_opt(url: Url) -> Result<PgConnectOptions> {
 pub fn get_pg_options() -> Result<PgConnectOptions> {
     let cfg = Config::default();
 
-    match cfg.socket_url {
-        Some(socket_url) => {
-            log!("PGLATER_SOCKET_URL={:?}", socket_url);
-            let socket_conn = PostgresSocketConnection::from_unix_socket_string(&socket_url)
-                .expect("failed to parse socket url");
+    let guc_host: Option<String> = cfg.guc_host;
+    let env_socket: Option<String> = cfg.env_socket_url;
+    let env_url: String = cfg.pg_conn_str;
+
+    match (guc_host.as_ref(), env_socket.as_ref()) {
+        (Some(guc), _) => {
+            log!("pg-later: pglater.host={:?}", guc);
+            let socket_conn = PostgresSocketConnection::from_unix_socket_string(&guc)
+                .expect("invalid value in pglater.host");
             get_pgc_socket_opt(socket_conn)
         }
-        None => {
-            log!("DATABASE_URL={}", cfg.pg_conn_str);
-            let url = Url::parse(&cfg.pg_conn_str)?;
+        (None, Some(env)) => {
+            log!("pg-later; PGLATER_SOCKET_URL={:?}", env);
+            let socket_conn = PostgresSocketConnection::from_unix_socket_string(&env)
+                .expect("invalid value in env PGLATER_SOCKET_URL");
+            get_pgc_socket_opt(socket_conn)
+        }
+        (None, None) => {
+            log!("pg-later: DATABASE_URL={:?}", env_url);
+            let url = Url::parse(&env_url)?;
             get_pgc_tcp_opt(url)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_connection_parsing_socket() {
+        let expected = PostgresSocketConnection {
+            user: Some("me".to_string()),
+            dbname: Some("pg_later_test".to_string()),
+            host: Some("/home/me/.pgrx".to_string()),
+            password: Some("pw".to_string()),
+            port: Some(5432),
+        };
+
+        let parsed = PostgresSocketConnection::from_unix_socket_string(
+            "postgresql:///?user=me&host=/home/me/.pgrx&password=pw&port=5432&dbname=pg_later_test",
+        )
+        .unwrap();
+        assert_eq!(parsed, expected);
     }
 }

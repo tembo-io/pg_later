@@ -7,7 +7,7 @@ pub static PGLATER_SOCKET_URL: GucSetting<Option<&CStr>> = GucSetting::<Option<&
 // initialize GUCs
 pub fn init_guc() {
     GucRegistry::define_string_guc(
-        "pglater.socket_url",
+        "pglater.host",
         "unix socket url for Postgres",
         "unix socket path to the Postgres instance. Optional. Can also be set in environment variable PGLATER_SOCKET_URL.",
         &PGLATER_SOCKET_URL,
@@ -17,13 +17,13 @@ pub fn init_guc() {
 // for handling of GUCs that can be error prone
 #[derive(Debug)]
 pub enum PglaterGUC {
-    SocketHost,
+    Host,
 }
 
 /// a convenience function to get this project's GUCs
 pub fn get_guc(guc: PglaterGUC) -> Option<String> {
     let val = match guc {
-        PglaterGUC::SocketHost => PGLATER_SOCKET_URL.get(),
+        PglaterGUC::Host => PGLATER_SOCKET_URL.get(),
     };
     if let Some(cstr) = val {
         if let Ok(s) = handle_cstr(cstr) {
