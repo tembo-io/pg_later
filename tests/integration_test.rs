@@ -62,6 +62,16 @@ async fn test_lifecycle() {
         "success".to_string()
     );
 
+    // invalid query case
+    let invalid_query = "invalid query";
+    let result = sqlx::query(&format!("SELECT pglater.exec('{}')", invalid_query))
+        .fetch_one(&conn)
+        .await;
+    assert!(
+        result.is_err(),
+        "Executing an invalid query should result in an error"
+    );
+
     // create table case
     let test_num = rng.gen_range(0..100000);
     let table_name = format!("test_table_{}", test_num);
