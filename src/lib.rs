@@ -6,6 +6,7 @@ mod api;
 mod bgw;
 mod clf;
 mod executor;
+mod guc;
 mod util;
 
 /// This module is required by `cargo pgrx test` invocations.

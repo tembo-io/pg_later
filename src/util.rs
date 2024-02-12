@@ -1,16 +1,16 @@
+use anyhow::Result;
 use pgrx::prelude::*;
+use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 use sqlx::{Pool, Postgres};
 use std::env;
-
-use anyhow::Result;
-
-use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 use url::{ParseError, Url};
+
+use crate::guc;
 
 #[derive(Clone, Debug)]
 pub struct Config {
     pub pg_conn_str: String,
-    pub vectorize_socket_url: Option<String>,
+    pub socket_url: Option<String>,
 }
 
 impl Default for Config {
@@ -20,7 +20,16 @@ impl Default for Config {
                 "DATABASE_URL",
                 "postgresql://postgres:postgres@0.0.0.0:5432/postgres",
             ),
-            vectorize_socket_url: env::var("PGLATER_SOCKET_URL").ok(),
+            socket_url: {
+                let guc_socket = guc::get_guc(guc::PglaterGUC::SocketHost);
+                let env_socket = env::var("PGLATER_SOCKET_URL").ok();
+                // return guc if its provided, otherwise try to return from env
+                // if both are not provided, this will be None
+                match guc_socket {
+                    Some(s) => Some(s),
+                    None => env_socket,
+                }
+            },
         }
     }
 }
@@ -89,7 +98,6 @@ pub fn get_pgc_socket_opt(socket_conn: PostgresSocketConnection) -> Result<PgCon
     }
     if socket_conn.password.is_some() {
         opts = opts.password(&socket_conn.password.expect("missing socket password"));
-    } else {
     }
     Ok(opts)
 }
@@ -107,7 +115,8 @@ fn get_pgc_tcp_opt(url: Url) -> Result<PgConnectOptions> {
 
 pub fn get_pg_options() -> Result<PgConnectOptions> {
     let cfg = Config::default();
-    match cfg.vectorize_socket_url {
+
+    match cfg.socket_url {
         Some(socket_url) => {
             log!("PGLATER_SOCKET_URL={:?}", socket_url);
             let socket_conn = PostgresSocketConnection::from_unix_socket_string(&socket_url)
