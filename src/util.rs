@@ -116,19 +116,19 @@ pub fn get_pg_options() -> Result<PgConnectOptions> {
 
     match (guc_host.as_ref(), env_socket.as_ref()) {
         (Some(guc), _) => {
-            log!("pg-later: pglater.host={:?}", guc);
+            log!("pg-later: connecting with value from pglater.host");
             let socket_conn = PostgresSocketConnection::from_unix_socket_string(&guc)
                 .expect("invalid value in pglater.host");
             get_pgc_socket_opt(socket_conn)
         }
         (None, Some(env)) => {
-            log!("pg-later; PGLATER_SOCKET_URL={:?}", env);
+            log!("pg-later: connecting with value from env PGLATER_SOCKET_URL");
             let socket_conn = PostgresSocketConnection::from_unix_socket_string(&env)
                 .expect("invalid value in env PGLATER_SOCKET_URL");
             get_pgc_socket_opt(socket_conn)
         }
         (None, None) => {
-            log!("pg-later: DATABASE_URL={:?}", env_url);
+            log!("pg-later: connecting with value from env DATABASE_URL");
             let url = Url::parse(&env_url)?;
             get_pgc_tcp_opt(url)
         }
