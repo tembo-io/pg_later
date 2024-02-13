@@ -6,6 +6,7 @@ use sqlx::Postgres;
 use std::time::Duration;
 
 use crate::executor::{query_to_json, Job};
+use crate::guc::init_guc;
 use crate::util;
 use anyhow::Result;
 
@@ -13,6 +14,7 @@ pub const PGMQ_QUEUE_NAME: &str = "pg_later_jobs";
 
 #[pg_guard]
 pub extern "C" fn _PG_init() {
+    init_guc();
     BackgroundWorkerBuilder::new("PG Later Background Worker")
         .set_function("background_worker_main")
         .set_library("pg_later")
