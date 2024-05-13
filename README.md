@@ -3,6 +3,8 @@ Execute SQL now and get the results later.
 
 A postgres extension to execute queries asynchronously. Built on [pgmq](https://github.com/tembo-io/pgmq).
 
+[![Tembo Cloud Try Free](https://tembo.io/tryFreeButton.svg)](https://cloud.tembo.io/sign-up)
+
 [![Static Badge](https://img.shields.io/badge/%40tembo-community?logo=slack&label=slack)](https://join.slack.com/t/tembocommunity/shared_invite/zt-20dtnhcmo-pLNV7_Aobi50TdTLpfQ~EQ)
 [![PGXN version](https://badge.fury.io/pg/pg_later.svg)](https://pgxn.org/dist/pg_later/)
 
