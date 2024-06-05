@@ -37,9 +37,7 @@ pub extern "C" fn background_worker_main(_arg: pg_sys::Datum) {
         let conn = util::get_pg_conn()
             .await
             .expect("failed to connect to database");
-        let queue = PGMQueueExt::new_with_pool(conn.clone())
-            .await
-            .expect("failed to init db connection");
+        let queue = PGMQueueExt::new_with_pool(conn.clone()).await;
         (conn, queue)
     });
 
