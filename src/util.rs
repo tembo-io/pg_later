@@ -40,7 +40,6 @@ impl PostgresSocketConnection {
     fn from_unix_socket_string(s: &str) -> Option<Self> {
         let parsed_url = url::Url::parse(s).ok()?;
         let mut connection = PostgresSocketConnection::default();
-        info!("raw from_unix_socket_string url: {:?}", s);
         for (key, value) in parsed_url.query_pairs() {
             match key.as_ref() {
                 "user" => connection.user = Some(value.into_owned()),
@@ -122,7 +121,7 @@ pub fn get_pg_options() -> Result<PgConnectOptions> {
             get_pgc_socket_opt(socket_conn)
         }
         (None, Some(env)) => {
-            log!("pg-later: connecting with value from env PGLATER_SOCKET_URL");
+            log!("pg-later: connecting with value from env PGLATER_SOCKET_URL: {env}");
             let socket_conn = PostgresSocketConnection::from_unix_socket_string(&env)
                 .expect("invalid value in env PGLATER_SOCKET_URL");
             get_pgc_socket_opt(socket_conn)

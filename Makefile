@@ -40,4 +40,4 @@ setup.shared_preload_libraries:
 setup: install-pgmq setup.shared_preload_libraries 
 
 test:
-	SQLX_OFFLINE=true DATABASE_URL=${DATABASE_URL} cargo pgrx test pg${PG_VERSION}
+	SQLX_OFFLINE=true DATABASE_URL=${DATABASE_URL} cargo pgrx test
