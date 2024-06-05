@@ -116,7 +116,7 @@ jobs:
           echo "shared_preload_libraries = 'pg_later'" >> ~/.pgrx/data-16/postgresql.conf
           ~/.cargo/bin/trunk install pgmq --version 1.3.3 --pg-config ${pgrx16_config}
           echo "\q" | make run
-          cargo pgrx test ${pg_version}
+          make test
       - name: Debugging information
         if: always()
         run: |
