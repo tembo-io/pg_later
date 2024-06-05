@@ -134,6 +134,9 @@ jobs:
     name: trunk publish
     needs: dependencies
     runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        pg-version: [14, 15, 16]
     steps:
       - uses: actions/checkout@v2
       - name: Install Rust stable toolchain
@@ -159,7 +162,7 @@ jobs:
             ${{ runner.os }}-bins-
       - name: trunk build
         working-directory: ./
-        run:  ~/.cargo/bin/trunk build
+        run:  ~/.cargo/bin/trunk build --pg-version ${{ matrix.pg-version }}
       - name: trunk publish
         working-directory: ./
         env:
