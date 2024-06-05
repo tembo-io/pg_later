@@ -171,7 +171,7 @@ jobs:
           TRUNK_API_TOKEN: ${{ secrets.TRUNK_AUTH_TOKEN }}
         run: ~/.cargo/bin/trunk publish
   build_and_push:
-    if: github.event_name == 'release'
+    # if: github.event_name == 'release'
     name: Build and push images
     needs:
       - dependencies
