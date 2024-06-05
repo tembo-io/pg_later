@@ -192,9 +192,10 @@ jobs:
         run: |
           echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
           echo "TAG_VER=$(/usr/local/bin/stoml Trunk.toml extension.version)" >> $GITHUB_OUTPUT
+          echo "PGRX_VER=$(/usr/local/bin/stoml Cargo.toml dependencies.pgrx)" >> $GITHUB_OUTPUT
       - name: Build and upload image
         run: |
-          docker build --build-arg="PG_LATER_VER=${{ steps.versions.outputs.TAG_VER }}" -t pglater-pg images/pglater-pg
+          docker build --build-arg="PGRX_VER=${{ steps.versions.outputs.PGRX_VER }}" -t pglater-pg images/pglater-pg
           docker tag pglater-pg quay.io/tembo/pglater-pg:v${{ steps.versions.outputs.TAG_VER }}
           docker tag pglater-pg quay.io/tembo/pglater-pg:latest
       - name: Login to Quay
