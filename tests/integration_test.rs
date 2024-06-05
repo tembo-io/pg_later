@@ -50,7 +50,7 @@ async fn test_lifecycle() {
     ))
     .fetch_one(&conn)
     .await
-    .expect("failed to fetch");
+    .expect(&format!("failed to fetch {q0}"));
     let r = row.0;
     assert_eq!(
         r.get("query").expect("no query").to_owned(),

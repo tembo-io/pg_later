@@ -13,7 +13,7 @@ format:
 
 # run in pgrx locally
 run:
-	PGLATER_SOCKET_URL=${PGLATER_SOCKET_URL} cargo pgrx run pg${PG_VERSION}
+	SQLX_OFFLINE=true PGLATER_SOCKET_URL=${PGLATER_SOCKET_URL} cargo pgrx run pg${PG_VERSION}
 
 META.json: META.json.in Trunk.toml
 	@sed "s/@CARGO_VERSION@/$(DISTVERSION)/g" $< > $@
@@ -40,4 +40,4 @@ setup.shared_preload_libraries:
 setup: install-pgmq setup.shared_preload_libraries 
 
 test:
-	DATABASE_URL=${DATABASE_URL} cargo test
+	SQLX_OFFLINE=true DATABASE_URL=${DATABASE_URL} cargo pgrx test
