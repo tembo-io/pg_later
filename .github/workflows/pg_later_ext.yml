@@ -162,6 +162,7 @@ jobs:
       - name: trunk build
         working-directory: ./
         run: |
+          cargo install pg-trunk
           ~/.cargo/bin/trunk --version
           ~/.cargo/bin/trunk build --pg-version ${{ matrix.pg-version }}
       - name: trunk publish
