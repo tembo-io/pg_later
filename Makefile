@@ -2,8 +2,8 @@ DISTNAME = $(shell grep -m 1 '^name' Trunk.toml | sed -e 's/[^"]*"\([^"]*\)",\{0
 DISTVERSION  = $(shell grep -m 1 '^version' Cargo.toml | sed -e 's/[^"]*"\([^"]*\)",\{0,1\}/\1/')
 PG_VERSION:=16
 PGRX_PG_CONFIG =$(shell cargo pgrx info pg-config pg${PG_VERSION})
-PGLATER_SOCKET_URL:='postgresql:///pg_later?host=/Users/${USER}/.pgrx&user=${USER}&dbname=pg_later&port=288${PG_VERSION}'
-DATABASE_URL:=postgres://${USER}:${USER}@localhost:288${PG_VERSION}/pg_later
+PGLATER_SOCKET_URL:='postgresql:///postgres?host=/Users/${USER}/.pgrx&user=${USER}&dbname=postgres&port=288${PG_VERSION}'
+DATABASE_URL:=postgres://${USER}:${USER}@localhost:288${PG_VERSION}/postgres
 
 .PHONY: format run setup
 
@@ -13,7 +13,7 @@ format:
 
 # run in pgrx locally
 run:
-	SQLX_OFFLINE=true PGLATER_SOCKET_URL=${PGLATER_SOCKET_URL} cargo pgrx run pg${PG_VERSION}
+	SQLX_OFFLINE=true PGLATER_SOCKET_URL=${PGLATER_SOCKET_URL} cargo pgrx run pg${PG_VERSION} postgres
 
 META.json: META.json.in Trunk.toml
 	@sed "s/@CARGO_VERSION@/$(DISTVERSION)/g" $< > $@

@@ -43,7 +43,8 @@ pub extern "C" fn background_worker_main(_arg: pg_sys::Datum) {
 
     log!("Starting BG Workers {}", BackgroundWorker::get_name());
 
-    while BackgroundWorker::wait_latch(Some(Duration::from_secs(5))) {
+    let mut wait_duration: Duration = Duration::from_secs(5);
+    while BackgroundWorker::wait_latch(Some(wait_duration)) {
         if BackgroundWorker::sighup_received() {
             // TODO: reload config
         }
@@ -53,8 +54,8 @@ pub extern "C" fn background_worker_main(_arg: pg_sys::Datum) {
             continue;
         }
 
-        runtime.block_on(async {
-            match queue.read::<Job>(PGMQ_QUEUE_NAME, 100).await {
+        wait_duration = runtime.block_on(async {
+            let wait = match queue.read::<Job>(PGMQ_QUEUE_NAME, 100).await {
                 Ok(Some(msg)) => {
                     let job = msg.message;
                     log!("pg-later: executing job: {}", job.query);
@@ -73,14 +74,18 @@ pub extern "C" fn background_worker_main(_arg: pg_sys::Datum) {
                         .archive(PGMQ_QUEUE_NAME, msg.msg_id)
                         .await
                         .expect("failed to archive job");
+                    0
                 }
                 Ok(None) => {
-                    log!("pg-later: no jobs in queue")
+                    log!("pg-later: no jobs in queue");
+                    5
                 }
                 Err(e) => {
                     log!("pg-later: error, {:?}", e);
+                    10
                 }
-            }
+            };
+            Duration::from_secs(wait)
         });
     }
     log!("shutting down {} BGWorker", BackgroundWorker::get_name());
