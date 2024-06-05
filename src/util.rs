@@ -121,7 +121,7 @@ pub fn get_pg_options() -> Result<PgConnectOptions> {
             get_pgc_socket_opt(socket_conn)
         }
         (None, Some(env)) => {
-            log!("pg-later: connecting with value from env PGLATER_SOCKET_URL: {env}");
+            log!("pg-later: connecting with value from env PGLATER_SOCKET_URL");
             let socket_conn = PostgresSocketConnection::from_unix_socket_string(&env)
                 .expect("invalid value in env PGLATER_SOCKET_URL");
             get_pgc_socket_opt(socket_conn)
