@@ -172,8 +172,6 @@ jobs:
         run: ~/.cargo/bin/trunk publish
   build_and_push:
     name: Build and push images
-    needs:
-      - publish
     runs-on:
       - self-hosted
       - dind
@@ -199,7 +197,7 @@ jobs:
           echo "PGRX_VER=$(/usr/local/bin/stoml Cargo.toml dependencies.pgrx)" >> $GITHUB_OUTPUT
       - name: Build and upload image
         run: |
-          docker build --build-arg="PGRX_VER=${{ steps.versions.outputs.PGRX_VER }}" -t pglater-pg images/pglater-pg
+          docker build --build-arg="PGRX_VER=${{ steps.versions.outputs.PGRX_VER }}" -t pglater-pg -f images/pglater-pg/Dockerfile .
           docker tag pglater-pg quay.io/tembo/pglater-pg:v${{ steps.versions.outputs.TAG_VER }}
           docker tag pglater-pg quay.io/tembo/pglater-pg:latest
       - name: Login to Quay
