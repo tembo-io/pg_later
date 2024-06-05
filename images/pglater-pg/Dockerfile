@@ -10,7 +10,7 @@ RUN apt-get update \
 	libssl-dev \
 	make \
 	pkg-config \
-	postgresql-server-dev-15
+	postgresql-server-dev-16
 
 # install pgmq
 RUN git clone https://github.com/tembo-io/pgmq.git && \
