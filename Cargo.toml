@@ -1,6 +1,6 @@
 [package]
 name = "pg_later"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 publish = false
 
@@ -8,7 +8,7 @@ publish = false
 crate-type = ["cdylib"]
 
 [features]
-default = ["pg15"]
+default = ["pg16"]
 pg13 = ["pgrx/pg13", "pgrx-tests/pg13"]
 pg14 = ["pgrx/pg14", "pgrx-tests/pg14"]
 pg15 = ["pgrx/pg15", "pgrx-tests/pg15"]
@@ -19,10 +19,11 @@ pg_test = []
 anyhow = "1.0.72"
 chrono = {version = "0.4.26", features = ["serde"] }
 log = "0.4.19"
-pgmq = "0.26.0"
-pgrx = "0.11.3"
+pgmq = "0.27.0"
+pgrx = "0.11.4"
 serde = "1.0.164"
 serde_json = "1.0.99"
+sqlparser = "0.47"
 sqlx = { version = "0.7.3", features = [
     "postgres",
     "chrono",
@@ -32,14 +33,11 @@ sqlx = { version = "0.7.3", features = [
 tokio = "1.29.1"
 url = "2.4.0"
 postgres-types = "0.2.5"
-sqlparser = "0.43.1"
-
 
 [dev-dependencies]
-pgrx-tests = "0.11.3"
+pgrx-tests = "0.11.4"
 rand = "0.8.5"
 tokio = { version = "1", features = ["macros"] }
-whoami = "1.4.0"
 pgmq-core = "0.8.4"
 
 [profile.dev]

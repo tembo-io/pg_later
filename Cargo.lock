@@ -122,6 +122,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "atty"
+version = "0.2.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9b39be18770d11421cdb1b9947a45dd3f37e93092cbf377614828a319d5fee8"
+dependencies = [
+ "hermit-abi 0.1.19",
+ "libc",
+ "winapi",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -831,6 +842,15 @@ dependencies = [
 
 [[package]]
 name = "hermit-abi"
+version = "0.1.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "62b467343b94ba476dcb2500d242dadbb39557df889310ac77c5d99100aaac33"
+dependencies = [
+ "libc",
+]
+
+[[package]]
+name = "hermit-abi"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "443144c8cdadd93ebf52ddb4056d257f5b52c04d3c804e657d19eb73fc33668b"
@@ -916,6 +936,12 @@ dependencies = [
  "equivalent",
  "hashbrown",
 ]
+
+[[package]]
+name = "is_ci"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7655c9839580ee829dfacba1d1278c2b7883e50a277ff7541299489d6bdfdc45"
 
 [[package]]
 name = "itertools"
@@ -1145,7 +1171,7 @@ version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4161fcb6d602d4d2081af7c3a45852d875a03dd337a6bfdd6e06407b61342a43"
 dependencies = [
- "hermit-abi",
+ "hermit-abi 0.3.2",
  "libc",
 ]
 
@@ -1175,6 +1201,9 @@ name = "owo-colors"
 version = "3.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c1b04fb49957986fdce4d6ee7a65027d55d4b6d2265e5848bbb507b58ccfdb6f"
+dependencies = [
+ "supports-color",
+]
 
 [[package]]
 name = "parking_lot"
@@ -1258,7 +1287,7 @@ dependencies = [
 
 [[package]]
 name = "pg_later"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1275,14 +1304,13 @@ dependencies = [
  "sqlx",
  "tokio",
  "url",
- "whoami",
 ]
 
 [[package]]
 name = "pgmq"
-version = "0.26.0"
+version = "0.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c0159d414341a3badb16cc9b7282cad40ee8c461d30c1a1a32f3be17d4039d6"
+checksum = "80466d1f2aaf109c7ee88404b4af2b68a08033e1bbcad5b0fd8a0b2326fd2e88"
 dependencies = [
  "chrono",
  "log",
@@ -1297,9 +1325,9 @@ dependencies = [
 
 [[package]]
 name = "pgmq-core"
-version = "0.8.4"
+version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd282003c4cbcfdf5190e259f940231f91a8b04fbda4588e45d51b7f1bf8177d"
+checksum = "65f1c261a1ee2cd46727c41a1e4257bb1d9aeea72a5c55cd91bc08805d4b0246"
 dependencies = [
  "chrono",
  "log",
@@ -1313,9 +1341,9 @@ dependencies = [
 
 [[package]]
 name = "pgrx"
-version = "0.11.3"
+version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2102faa5ef4a7bf096fefcf67692b293583efd18f9236340ad3169807dfc2b73"
+checksum = "3d4af45e16c27d0c7c12665f0cc5a714258c581a39901ee1488edd79a3c4c5a5"
 dependencies = [
  "atomic-traits",
  "bitflags 2.4.0",
@@ -1338,9 +1366,9 @@ dependencies = [
 
 [[package]]
 name = "pgrx-macros"
-version = "0.11.3"
+version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c26810d09910ec987a6708d48d243efb5f879331e01c6fec0893714d0eb12bae"
+checksum = "3a8e65ea4e93a273f42bc2ca024d2c65379541f223157f136db4b7d436088027"
 dependencies = [
  "pgrx-sql-entity-graph",
  "proc-macro2",
@@ -1350,9 +1378,9 @@ dependencies = [
 
 [[package]]
 name = "pgrx-pg-config"
-version = "0.11.3"
+version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b0099ba4b635dfe1e34afc8bca8be43e9577c5d726aaf1dc7dd23a78f6c8a60"
+checksum = "93074d31fc2f47c74ab46920fffa9ed9fb704fc8ffc07f8331c1e3b38e7ef88b"
 dependencies = [
  "cargo_toml",
  "dirs",
@@ -1368,9 +1396,9 @@ dependencies = [
 
 [[package]]
 name = "pgrx-pg-sys"
-version = "0.11.3"
+version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f40315259c41fede51eb23b791b48d0a112b0f47d0dcb6862b798d1fa1db6ea"
+checksum = "9a3f58b876cd9745609217c891978dd19023c9ccbfaa011c1a5af7f720e1c3fb"
 dependencies = [
  "bindgen",
  "clang-sys",
@@ -1392,9 +1420,9 @@ dependencies = [
 
 [[package]]
 name = "pgrx-sql-entity-graph"
-version = "0.11.3"
+version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d47a4e991c8c66162c5d6b0fc2bd382e43a58fc893ce05a6a15ddcb1bf7eee4"
+checksum = "3db12a1066a0ebecb8bae7aacf5b41f8e1c27c18ed914ee2a35fc2a974cd08e3"
 dependencies = [
  "convert_case",
  "eyre",
@@ -1407,9 +1435,9 @@ dependencies = [
 
 [[package]]
 name = "pgrx-tests"
-version = "0.11.3"
+version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab3abc01e2bb930b072bd660d04c8eaa69a29d4727d5b2a641f946c603c1605e"
+checksum = "0e28115c05db260b63e3cde7e02de861b954dae19124261650f9c60b4667e8d4"
 dependencies = [
  "clap-cargo",
  "eyre",
@@ -1999,9 +2027,9 @@ dependencies = [
 
 [[package]]
 name = "sqlparser"
-version = "0.43.1"
+version = "0.47.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f95c4bae5aba7cd30bd506f7140026ade63cff5afd778af8854026f9606bf5d4"
+checksum = "295e9930cd7a97e58ca2a070541a3ca502b17f5d1fa7157376d0fabd85324f25"
 dependencies = [
  "log",
 ]
@@ -2228,6 +2256,16 @@ name = "subtle"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81cdd64d312baedb58e21336b31bc043b77e01cc99033ce76ef539f78e965ebc"
+
+[[package]]
+name = "supports-color"
+version = "1.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ba6faf2ca7ee42fdd458f4347ae0a9bd6bcc445ad7cb57ad82b383f18870d6f"
+dependencies = [
+ "atty",
+ "is_ci",
+]
 
 [[package]]
 name = "syn"

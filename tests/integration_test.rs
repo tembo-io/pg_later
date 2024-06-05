@@ -1,10 +1,13 @@
 use rand::Rng;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres, Row};
+use std::env;
 use tokio::time::{sleep, Duration};
 
-async fn connect(url: &str) -> Pool<Postgres> {
-    let options = pgmq_core::util::conn_options(url).expect("failed to parse url");
+async fn connect() -> Pool<Postgres> {
+    // get url from environment variable
+    let dburl = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let options = pgmq_core::util::conn_options(&dburl).expect("failed to parse url");
     PgPoolOptions::new()
         .acquire_timeout(std::time::Duration::from_secs(10))
         .max_connections(5)
@@ -15,11 +18,7 @@ async fn connect(url: &str) -> Pool<Postgres> {
 
 #[tokio::test]
 async fn test_lifecycle() {
-    let username = whoami::username();
-    let conn = connect(&format!(
-        "postgres://{username}:postgres@localhost:28815/postgres"
-    ))
-    .await;
+    let conn = connect().await;
     let mut rng = rand::thread_rng();
 
     let _ = sqlx::query("DROP EXTENSION IF EXISTS pg_later")
@@ -51,7 +50,7 @@ async fn test_lifecycle() {
     ))
     .fetch_one(&conn)
     .await
-    .expect("failed to fetch");
+    .expect(&format!("failed to fetch {q0}"));
     let r = row.0;
     assert_eq!(
         r.get("query").expect("no query").to_owned(),

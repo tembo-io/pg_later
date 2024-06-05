@@ -40,7 +40,6 @@ impl PostgresSocketConnection {
     fn from_unix_socket_string(s: &str) -> Option<Self> {
         let parsed_url = url::Url::parse(s).ok()?;
         let mut connection = PostgresSocketConnection::default();
-
         for (key, value) in parsed_url.query_pairs() {
             match key.as_ref() {
                 "user" => connection.user = Some(value.into_owned()),

@@ -10,13 +10,13 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'pglater-pg/**'
+      - "pglater-pg/**"
 
   push:
     branches:
       - main
     paths-ignore:
-      - 'pglater-pg/**'
+      - "pglater-pg/**"
   release:
     types:
       - created
@@ -38,12 +38,12 @@ jobs:
       - name: Install stoml and pg-trunk
         shell: bash
         run: |
-         set -xe
-         wget https://github.com/freshautomations/stoml/releases/download/v0.7.1/stoml_linux_amd64 &> /dev/null
-         mv stoml_linux_amd64 stoml
-         chmod +x stoml
-         sudo mv stoml /usr/local/bin/
-         cargo install pg-trunk
+          set -xe
+          wget https://github.com/freshautomations/stoml/releases/download/v0.7.1/stoml_linux_amd64 &> /dev/null
+          mv stoml_linux_amd64 stoml
+          chmod +x stoml
+          sudo mv stoml /usr/local/bin/
+          cargo install pg-trunk
       - name: Cache binaries
         uses: actions/cache@v2
         with:
@@ -112,28 +112,29 @@ jobs:
             ${{ runner.os }}-bins-
       - name: test
         run: |
-          pgrx15_config=$(/usr/local/bin/stoml ~/.pgrx/config.toml configs.pg15)
-          echo "shared_preload_libraries = 'pg_later'" >> ~/.pgrx/data-15/postgresql.conf
-          ~/.cargo/bin/trunk install pgmq --version 0.28.0 --pg-config ${pgrx15_config}
-          pg_version=$(stoml Cargo.toml features.default)
-          export PGLATER_SOCKET_URL="postgresql:///pg_later?host=/home/runner/.pgrx&user=${USER}&dbname=postgres&port=28815"
-          cargo pgrx install --pg-config ${pgrx15_config}
-          cargo pgrx run ${pg_version} --pgcli || true
-          cargo pgrx start ${pg_version}
-          cargo pgrx test ${pg_version}
+          make setup
+          echo "\q" | make run
+          make test
       - name: Debugging information
         if: always()
         run: |
           set +e
           set -x
-          echo "=========="
-          cat ~/.pgrx/15.log
+          echo "==== pg16 logs ======"
+          cat ~/.pgrx/16.log
+          echo "==== pg16 conf ======"
+          tail -10 ~/.pgrx/data-16/postgresql.conf
+          echo "==== .pgrx dir ======"
+          ls -alh ~/.pgrx
 
   publish:
     if: startsWith(github.ref, 'refs/tags/')
     name: trunk publish
     needs: dependencies
     runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        pg-version: [14, 15, 16]
     steps:
       - uses: actions/checkout@v2
       - name: Install Rust stable toolchain
@@ -144,7 +145,7 @@ jobs:
         with:
           prefix-key: "pg_later-extension-test"
           workspaces: |
-              pg_later/extension
+            pg_later/extension
           # Additional directories to cache
           cache-directories: |
             /home/runner/.pgrx
@@ -159,12 +160,12 @@ jobs:
             ${{ runner.os }}-bins-
       - name: trunk build
         working-directory: ./
-        run:  ~/.cargo/bin/trunk build
+        run: ~/.cargo/bin/trunk build --pg-version ${{ matrix.pg-version }}
       - name: trunk publish
         working-directory: ./
         env:
           TRUNK_API_TOKEN: ${{ secrets.TRUNK_AUTH_TOKEN }}
-        run:  ~/.cargo/bin/trunk publish
+        run: ~/.cargo/bin/trunk publish
   build_and_push:
     name: Build and push images
     needs:
@@ -181,19 +182,20 @@ jobs:
       - name: Install stoml and pg-trunk
         shell: bash
         run: |
-         set -xe
-         wget https://github.com/freshautomations/stoml/releases/download/v0.7.1/stoml_linux_amd64 &> /dev/null
-         mv stoml_linux_amd64 stoml
-         chmod +x stoml
-         sudo mv stoml /usr/local/bin/
+          set -xe
+          wget https://github.com/freshautomations/stoml/releases/download/v0.7.1/stoml_linux_amd64 &> /dev/null
+          mv stoml_linux_amd64 stoml
+          chmod +x stoml
+          sudo mv stoml /usr/local/bin/
       - name: Set version strings
         id: versions
         run: |
           echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
           echo "TAG_VER=$(/usr/local/bin/stoml Trunk.toml extension.version)" >> $GITHUB_OUTPUT
+          echo "PGRX_VER=$(/usr/local/bin/stoml Cargo.toml dependencies.pgrx)" >> $GITHUB_OUTPUT
       - name: Build and upload image
         run: |
-          docker build --build-arg="PG_LATER_VER=${{ steps.versions.outputs.TAG_VER }}" -t pglater-pg images/pglater-pg
+          docker build --build-arg="PGRX_VER=${{ steps.versions.outputs.PGRX_VER }}" -t pglater-pg images/pglater-pg
           docker tag pglater-pg quay.io/tembo/pglater-pg:v${{ steps.versions.outputs.TAG_VER }}
           docker tag pglater-pg quay.io/tembo/pglater-pg:latest
       - name: Login to Quay
