@@ -1,4 +1,5 @@
 # pg_later
+
 Execute SQL now and get the results later.
 
 A postgres extension to execute queries asynchronously. Built on [pgmq](https://github.com/tembo-io/pgmq).
@@ -18,7 +19,6 @@ docker run -p 5432:5432 -e POSTGRES_PASSWORD=postgres quay.io/tembo/pglater-pg:l
 
 If you'd like to build from source, you can follow the instructions in [CONTRIBUTING.md](https://github.com/tembo-io/pg_later/blob/main/CONTRIBUTING.md).
 
-
 ### Using the extension
 
 Initialize the extension's backend:
@@ -35,7 +35,9 @@ Execute a SQL query now:
 select pglater.exec(
   'select * from pg_available_extensions order by name limit 2'
 ) as job_id;
+```
 
+```text
  job_id 
 --------
      1
@@ -46,7 +48,9 @@ Come back at some later time, and retrieve the results by providing the job id:
 
 ```sql
 select pglater.fetch_results(1);
+```
 
+```text
  pg_later_results                                                                                                                                                                                       
 --------------------
 {

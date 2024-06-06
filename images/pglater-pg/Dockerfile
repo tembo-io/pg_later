@@ -10,7 +10,7 @@ RUN apt-get update \
 	libssl-dev \
 	make \
 	pkg-config \
-	postgresql-server-dev-15
+	postgresql-server-dev-16
 
 # install pgmq
 RUN git clone https://github.com/tembo-io/pgmq.git && \
@@ -26,6 +26,7 @@ RUN $HOME/.cargo/bin/rustup default stable
 # install pgrx
 ARG PGRX_VER=0.11.4
 RUN $HOME/.cargo/bin/cargo install cargo-pgrx --version=$PGRX_VER --locked
+RUN $HOME/.cargo/bin/cargo pgrx init --pg16 $(which pg_config)
 
 # install pglater
 COPY . .
