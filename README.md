@@ -51,7 +51,7 @@ select pglater.fetch_results(1);
 ```
 
 ```text
- pg_later_results                                                                                                                                                                                       
+ pg_later_results
 --------------------
 {
   "query": "select * from pg_available_extensions order by name limit 2",
