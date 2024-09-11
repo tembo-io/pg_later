@@ -28,11 +28,11 @@ clean:
 
 install-pgmq:
 	git clone https://github.com/tembo-io/pgmq.git && \
-	cd pgmq && \
+	cd pgmq/pgmq-extension && \
 	PG_CONFIG=${PGRX_PG_CONFIG} make clean && \
 	PG_CONFIG=${PGRX_PG_CONFIG} make && \
 	PG_CONFIG=${PGRX_PG_CONFIG} make install && \
-	cd .. && rm -rf pgmq
+	cd ../.. && rm -rf pgmq
 
 setup.shared_preload_libraries:
 	echo "shared_preload_libraries = 'pg_later'" >> ~/.pgrx/data-${PG_VERSION}/postgresql.conf
