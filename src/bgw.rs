@@ -24,7 +24,11 @@ pub extern "C" fn _PG_init() {
 
 #[pg_guard]
 #[no_mangle]
-pub extern "C" fn background_worker_main(_arg: pg_sys::Datum) {
+pub unsafe extern "C" fn background_worker_main(_arg: pg_sys::Datum) {
+    if !pg_sys::process_shared_preload_libraries_in_progress {
+        error!("pg_later must be loaded via shared_preload_libraries. Add 'pg_later' to shared_preload_libraries and restart Postgres.");
+    }
+
     BackgroundWorker::attach_signal_handlers(SignalWakeFlags::SIGHUP | SignalWakeFlags::SIGTERM);
 
     let runtime = tokio::runtime::Builder::new_current_thread()
