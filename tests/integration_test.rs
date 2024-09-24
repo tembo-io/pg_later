@@ -7,7 +7,7 @@ use tokio::time::{sleep, Duration};
 async fn connect() -> Pool<Postgres> {
     // get url from environment variable
     let dburl = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let options = pgmq_core::util::conn_options(&dburl).expect("failed to parse url");
+    let options = pgmq::util::conn_options(&dburl).expect("failed to parse url");
     PgPoolOptions::new()
         .acquire_timeout(std::time::Duration::from_secs(10))
         .max_connections(5)
