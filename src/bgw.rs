@@ -13,7 +13,10 @@ use anyhow::Result;
 pub const PGMQ_QUEUE_NAME: &str = "pg_later_jobs";
 
 #[pg_guard]
-pub extern "C" fn _PG_init() {
+pub unsafe extern "C" fn _PG_init() {
+    if !pg_sys::process_shared_preload_libraries_in_progress {
+        error!("pg_later must be loaded via shared_preload_libraries. Add 'pg_later' to shared_preload_libraries and restart Postgres.");
+    }
     init_guc();
     BackgroundWorkerBuilder::new("PG Later Background Worker")
         .set_function("background_worker_main")
@@ -24,11 +27,7 @@ pub extern "C" fn _PG_init() {
 
 #[pg_guard]
 #[no_mangle]
-pub unsafe extern "C" fn background_worker_main(_arg: pg_sys::Datum) {
-    if !pg_sys::process_shared_preload_libraries_in_progress {
-        error!("pg_later must be loaded via shared_preload_libraries. Add 'pg_later' to shared_preload_libraries and restart Postgres.");
-    }
-
+pub extern "C" fn background_worker_main(_arg: pg_sys::Datum) {
     BackgroundWorker::attach_signal_handlers(SignalWakeFlags::SIGHUP | SignalWakeFlags::SIGTERM);
 
     let runtime = tokio::runtime::Builder::new_current_thread()
