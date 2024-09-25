@@ -12,12 +12,9 @@ RUN apt-get update \
 	pkg-config \
 	postgresql-server-dev-16
 
+COPY . .
 # install pgmq
-RUN git clone https://github.com/tembo-io/pgmq.git && \
-	cd pgmq && \
-	make && \
-	make install && \
-	cd .. && rm -rf pgmq
+RUN make install-pgmq PGRX_PG_CONFIG=$(which pg_config)
 
 # Install Rust dependencies
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -29,7 +26,6 @@ RUN $HOME/.cargo/bin/cargo install cargo-pgrx --version=$PGRX_VER --locked
 RUN $HOME/.cargo/bin/cargo pgrx init --pg16 $(which pg_config)
 
 # install pglater
-COPY . .
 RUN $HOME/.cargo/bin/cargo pgrx install --pg-config=$(which pg_config)
 
 FROM postgres:16-bookworm
