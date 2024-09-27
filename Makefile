@@ -1,6 +1,6 @@
 DISTNAME = $(shell grep -m 1 '^name' Trunk.toml | sed -e 's/[^"]*"\([^"]*\)",\{0,1\}/\1/')
 DISTVERSION  = $(shell grep -m 1 '^version' Cargo.toml | sed -e 's/[^"]*"\([^"]*\)",\{0,1\}/\1/')
-PG_VERSION:=16
+PG_VERSION:=17
 PGRX_PG_CONFIG =$(shell cargo pgrx info pg-config pg${PG_VERSION})
 PGLATER_SOCKET_URL:='postgresql:///postgres?host=${HOME}/.pgrx&user=${USER}&dbname=postgres&port=288${PG_VERSION}'
 DATABASE_URL:=postgres://${USER}:${USER}@localhost:288${PG_VERSION}/postgres
