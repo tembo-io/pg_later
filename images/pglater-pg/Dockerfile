@@ -1,4 +1,4 @@
-FROM postgres:16-bookworm as builder
+FROM postgres:17-bookworm as builder
 
 RUN apt-get update \
     && apt-get install -y \
