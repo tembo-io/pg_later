@@ -6,7 +6,7 @@ description = "Execute SQL statements now and check the results later."
 homepage = "https://github.com/tembo-io/pg_later"
 documentation = "https://github.com/tembo-io/pg_later"
 categories = ["orchestration"]
-version = "0.1.3"
+version = "0.2.0"
 loadable_libraries = [{ library_name = "pg_later", requires_restart = true }]
 
 [build]
