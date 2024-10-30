@@ -10,7 +10,7 @@ RUN apt-get update \
 	libssl-dev \
 	make \
 	pkg-config \
-	postgresql-server-dev-16
+	postgresql-server-dev-17
 
 COPY . .
 # install pgmq
