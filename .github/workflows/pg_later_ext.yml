@@ -120,10 +120,10 @@ jobs:
         run: |
           set +e
           set -x
-          echo "==== pg16 logs ======"
-          cat ~/.pgrx/16.log
-          echo "==== pg16 conf ======"
-          tail -10 ~/.pgrx/data-16/postgresql.conf
+          echo "==== pg17 logs ======"
+          cat ~/.pgrx/17.log
+          echo "==== pg17 conf ======"
+          tail -10 ~/.pgrx/data-17/postgresql.conf
           echo "==== .pgrx dir ======"
           ls -alh ~/.pgrx
 
@@ -134,7 +134,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        pg-version: [14, 15, 16, 17]
+        pg-version: [14, 15, 16]
     steps:
       - uses: actions/checkout@v2
       - name: Install Rust stable toolchain

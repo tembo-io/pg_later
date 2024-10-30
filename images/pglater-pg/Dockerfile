@@ -10,7 +10,7 @@ RUN apt-get update \
 	libssl-dev \
 	make \
 	pkg-config \
-	postgresql-server-dev-16
+	postgresql-server-dev-17
 
 COPY . .
 # install pgmq
@@ -21,22 +21,22 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 RUN $HOME/.cargo/bin/rustup default stable
 
 # install pgrx
-ARG PGRX_VER=0.11.4
+ARG PGRX_VER=0.12.5
 RUN $HOME/.cargo/bin/cargo install cargo-pgrx --version=$PGRX_VER --locked
-RUN $HOME/.cargo/bin/cargo pgrx init --pg16 $(which pg_config)
+RUN $HOME/.cargo/bin/cargo pgrx init --pg17 $(which pg_config)
 
 # install pglater
 RUN $HOME/.cargo/bin/cargo pgrx install --pg-config=$(which pg_config)
 
-FROM postgres:16-bookworm
+FROM postgres:17-bookworm
 
-COPY --from=builder /usr/share/postgresql/16/extension /usr/share/postgresql/16/extension
-COPY --from=builder /usr/lib/postgresql/16/lib /usr/lib/postgresql/16/lib
+COPY --from=builder /usr/share/postgresql/17/extension /usr/share/postgresql/17/extension
+COPY --from=builder /usr/lib/postgresql/17/lib /usr/lib/postgresql/17/lib
 
 RUN apt-get update \
     && apt-get install -y ca-certificates
 
-COPY images/pglater-pg/postgresql.conf /usr/share/postgresql/16/postgresql.conf.sample
+COPY images/pglater-pg/postgresql.conf /usr/share/postgresql/17/postgresql.conf.sample
 
 USER postgres
 CMD ["postgres"]
