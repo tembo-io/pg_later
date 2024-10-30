@@ -15,7 +15,6 @@ on:
   push:
     branches:
       - main
-      - fix-builds
     paths-ignore:
       - "pglater-pg/**"
   release:
