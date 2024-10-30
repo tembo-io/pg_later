@@ -8,7 +8,7 @@ publish = false
 crate-type = ["cdylib", "lib"]
 
 [[bin]]
-name = "pgrx_embed_pglater"
+name = "pgrx_embed_pg_later"
 path = "./src/bin/pgrx_embed.rs"
 
 [features]
