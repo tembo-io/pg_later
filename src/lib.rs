@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use pgrx::prelude::*;
 
 pgrx::pg_module_magic!();

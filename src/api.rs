@@ -2,8 +2,6 @@
 ///
 use pgrx::prelude::*;
 use pgrx::spi::SpiTupleTable;
-use sqlparser::dialect::PostgreSqlDialect;
-use sqlparser::parser::Parser;
 
 #[pg_extern]
 fn init() -> Result<bool, spi::Error> {
@@ -26,9 +24,6 @@ fn init() -> Result<bool, spi::Error> {
 #[pg_extern]
 pub fn exec(query: &str, delay: default!(i64, 0)) -> Result<i64, spi::Error> {
     let prepared_query = query.replace('\'', "''").replace(';', "");
-    let dialect = PostgreSqlDialect {}; // Use PostgreSqlDialect for PostgreSQL
-    let parse_result = Parser::parse_sql(&dialect, &prepared_query);
-    parse_result.expect("Query parsing failed, please submit a valid query");
     let msg = serde_json::json!({
         "query": prepared_query,
     });
