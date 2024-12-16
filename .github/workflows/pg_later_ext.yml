@@ -129,9 +129,9 @@ jobs:
           ls -alh ~/.pgrx
 
   publish:
-    # if: github.event_name == 'release'
+    if: github.event_name == 'release'
     name: trunk publish
-    # needs: dependencies
+    needs: dependencies
     runs-on: ubuntu-22.04
     strategy:
       matrix:
