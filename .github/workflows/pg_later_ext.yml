@@ -128,13 +128,13 @@ jobs:
           ls -alh ~/.pgrx
 
   publish:
-    if: github.event_name == 'release'
+    # if: github.event_name == 'release'
     name: trunk publish
-    needs: dependencies
+    # needs: dependencies
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        pg-version: [14, 15, 16]
+        pg-version: [14, 15, 16, 17]
     steps:
       - uses: actions/checkout@v2
       - name: Install Rust stable toolchain
