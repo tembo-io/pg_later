@@ -113,4 +113,19 @@ async fn test_lifecycle() {
         .await
         .expect("failed to fetch");
     assert!(row.0, "table must exist");
+
+    // bypass validation -- any statement will pass through to execution
+    let bypass_validation_query = format!(
+        "SELECT pglater.exec(
+            query => 'CREATE INDEX ON mytable USING hnsw (embedding vector_l2_ops)',
+            validate => false
+        )",
+    );
+    println!("pglater exec: {}", bypass_validation_query);
+    let q2 = sqlx::query(&bypass_validation_query)
+        .fetch_one(&conn)
+        .await
+        .expect("failed bypass check")
+        .get::<i64, usize>(0);
+    assert!(q2 > q1, "job ids should increase");
 }
