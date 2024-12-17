@@ -24,11 +24,17 @@ fn init() -> Result<bool, spi::Error> {
 
 /// send a query to be executed by the next available worker
 #[pg_extern]
-pub fn exec(query: &str, delay: default!(i64, 0)) -> Result<i64, spi::Error> {
+pub fn exec(
+    query: &str,
+    delay: default!(i64, 0),
+    validate: default!(bool, true),
+) -> Result<i64, spi::Error> {
     let prepared_query = query.replace('\'', "''").replace(';', "");
-    let dialect = PostgreSqlDialect {}; // Use PostgreSqlDialect for PostgreSQL
-    let parse_result = Parser::parse_sql(&dialect, &prepared_query);
-    parse_result.expect("Query parsing failed, please submit a valid query");
+    if validate {
+        let dialect = PostgreSqlDialect {};
+        let parse_result = Parser::parse_sql(&dialect, &prepared_query);
+        parse_result.expect("Query parsing failed, please submit a valid query");
+    }
     let msg = serde_json::json!({
         "query": prepared_query,
     });
